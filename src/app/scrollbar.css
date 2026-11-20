@@ -1,0 +1,201 @@
+/* ------------------------------------------------------------ scroll bar
+   The browser's bar is replaced by the site's own (ScrollBar.tsx): an orange
+   thumb riding the right-hand line of the frame round every page. Scrolling
+   boxes inside the page keep their own bars. The browser's bar goes only once
+   the site's is mounted, so without script the page keeps an ordinary one. */
+html.has-own-scrollbar {
+  scrollbar-width: none;
+}
+
+html.has-own-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Centred on the frame's 1px line: its middle is half a pixel inside `--frame` from the edge. */
+.scrollbar {
+  --scroll-progress: 0;
+  /* Half the strip that takes the pointer: narrow, so it never steals clicks from the page at the edge. */
+  --scrollbar-half: 5px;
+  position: fixed;
+  top: var(--frame);
+  bottom: var(--frame);
+  right: calc(var(--frame) + 0.5px - var(--scrollbar-half));
+  z-index: 61;
+  width: calc(var(--scrollbar-half) * 2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+}
+
+.scrollbar[data-ready="true"][data-scrollable="true"] {
+  opacity: 1;
+}
+
+/* Only a mouse or a pen can catch it; on touch it is a gauge, and the finger scrolls the page. */
+@media (pointer: fine) {
+  .scrollbar[data-scrollable="true"] {
+    pointer-events: auto;
+    cursor: pointer;
+    touch-action: none;
+  }
+}
+
+.scrollbar-track {
+  position: absolute;
+  inset: 0.75rem 0;
+}
+
+.scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 3px;
+  margin-left: -1.5px;
+  background: var(--accent);
+  will-change: transform;
+  cursor: grab;
+  transition:
+    scale 0.4s var(--ease),
+    box-shadow 0.5s var(--ease);
+}
+
+.scrollbar:is([data-active="true"], :hover) .scrollbar-thumb {
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* Fattens under the pointer, so there is something to take hold of. */
+.scrollbar:is(:hover, [data-dragging="true"]) .scrollbar-thumb {
+  scale: 2 1;
+}
+
+.scrollbar[data-dragging="true"],
+.scrollbar[data-dragging="true"] .scrollbar-thumb {
+  cursor: grabbing;
+}
+
+/* The scale beside the line: grey ticks, and orange ones for the distance already scrolled. */
+.scrollbar-ticks {
+  position: absolute;
+  inset-block: 0;
+  right: calc(50% + 4px);
+  width: 5px;
+  background: repeating-linear-gradient(to bottom, var(--line-strong) 0 1px, transparent 1px 32px);
+  opacity: 0;
+  pointer-events: none;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition:
+    opacity 0.5s var(--ease),
+    transform 0.6s var(--ease);
+}
+
+.scrollbar-ticks-passed {
+  background: repeating-linear-gradient(to bottom, var(--accent) 0 1px, transparent 1px 32px);
+  clip-path: inset(0 0 calc((1 - var(--scroll-progress)) * 100%) 0);
+}
+
+.scrollbar:is([data-active="true"], :hover) .scrollbar-ticks {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* How far down the page: rides beside the middle of the thumb. */
+.scrollbar-readout {
+  position: absolute;
+  top: 0;
+  right: calc(50% + 14px);
+  translate: 8px -50%;
+  padding: 4px 6px 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  color: var(--paper);
+  background: var(--ink);
+  border: 1px solid var(--line-strong);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.35s var(--ease),
+    translate 0.45s var(--ease);
+}
+
+.scrollbar-readout b {
+  font-weight: 500;
+  color: var(--accent-text);
+}
+
+.scrollbar:is([data-active="true"], :hover, [data-dragging="true"]) .scrollbar-readout {
+  opacity: 1;
+  translate: 0 -50%;
+}
+
+/* Arriving: a light sweeps down the line, then the thumb draws itself in. */
+.scrollbar-track::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 28%;
+  margin-left: -0.5px;
+  background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+html.motion .scrollbar[data-ready="true"] .scrollbar-track::before {
+  animation: scrollbar-scan 1.3s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+html.motion .scrollbar[data-ready="true"] .scrollbar-thumb {
+  animation: scrollbar-thumb-in 0.9s var(--ease) 0.55s both;
+}
+
+@keyframes scrollbar-scan {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(360%);
+    opacity: 0;
+  }
+}
+
+@keyframes scrollbar-thumb-in {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* High-contrast modes drop backgrounds: keep the thumb in the system's highlight colour. */
+@media (forced-colors: active) {
+  .scrollbar-thumb {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+}
+
+@media (pointer: coarse) {
+  .scrollbar-readout,
+  .scrollbar-ticks {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollbar,
+  .scrollbar * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

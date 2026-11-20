@@ -1,0 +1,326 @@
+/* ------------------------------------------------------------------
+   Page transitions and the project stack.
+
+   Everything that moves is gated by `html.motion` (set before first
+   paint unless the visitor asked for reduced motion), so without it the
+   page is simply shown in its resting state.
+------------------------------------------------------------------- */
+
+/* The ground colour laid over the page for the moment it changes. Below the header, above everything else. */
+.page-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: var(--ink);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* A panel over a case study's picture that shrinks away to the top as the page arrives. */
+.hero-cover {
+  display: none;
+}
+
+html.motion .hero-cover {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--ink);
+  transform-origin: center top;
+  pointer-events: none;
+  animation: hero-uncover 0.7s cubic-bezier(0.755, 0.05, 0.855, 0.06) 0.3s both;
+}
+
+@keyframes hero-uncover {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(0);
+  }
+}
+
+/* ------------------------------------------------------------ the stack
+   Project titles as one tall list seen in perspective: each title is a
+   plane hinged on its right edge and swung 45 degrees away. The vanishing
+   point follows the middle of the screen as the page scrolls. */
+.stack {
+  position: relative;
+  overflow: clip;
+  perspective: 100vw;
+  perspective-origin: 50% var(--stack-origin-y, 50vh);
+}
+
+.stack-container {
+  transform: translateZ(0);
+  transform-style: preserve-3d;
+}
+
+.stack-stage {
+  display: flex;
+  justify-content: flex-end;
+  padding: 5vw 5vw calc(7.5vw + 67px) 0;
+  transform-style: preserve-3d;
+}
+
+.stack-list {
+  width: 95%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: right;
+  transform-style: preserve-3d;
+}
+
+.stack-item {
+  transform-style: preserve-3d;
+}
+
+.stack-plane {
+  transform: rotateY(-45deg) translateZ(0) scale(1);
+  transform-origin: right center;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.stack-link {
+  position: relative;
+  color: var(--paper);
+  font-family: var(--font-wide);
+  font-size: 13vw;
+  font-weight: 900;
+  line-height: 0.9em;
+  text-decoration: none;
+  text-transform: uppercase;
+  -webkit-text-stroke: 1px var(--paper);
+  /* The line is painted first and the fill over it, so only its outer half ever shows: a heavy face draws
+     its letters from overlapping shapes, and a line painted on top would trace every one of them inside the letter. */
+  paint-order: stroke fill;
+  transition:
+    color 0.5s,
+    opacity 0.5s;
+}
+
+/* A real ring as well as the turn and the outline lettering: those vanish in forced-colour modes and during the arrival. */
+.stack-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0.06em;
+}
+
+/* The small line beside a title: its number and year. */
+.stack-info {
+  position: absolute;
+  top: 10px;
+  left: -220px;
+  width: 200px;
+  font-family: var(--font-mono);
+  font-size: 7px;
+  font-weight: 500;
+  line-height: 1em;
+  letter-spacing: 0;
+  text-align: right;
+  white-space: pre;
+  color: var(--paper);
+  pointer-events: none;
+  -webkit-text-stroke: 0;
+}
+
+.stack-info b {
+  font-weight: inherit;
+  color: var(--accent);
+}
+
+/* The slash that leads each title. */
+.stack-slash {
+  position: absolute;
+  top: 10px;
+  left: -15px;
+  width: 1px;
+  height: 0.85em;
+  background: var(--accent);
+  transform: rotate(25deg);
+  pointer-events: none;
+}
+
+/* The title under the pointer (or keyboard focus) swings a little towards the visitor and empties to an outline. */
+.stack[data-phase="idle"] .stack-item:is(:hover, :focus-within) .stack-plane {
+  transform: rotateY(-35deg) translateZ(0) scale(1);
+  transition-duration: 1s;
+}
+
+.stack[data-phase="idle"] .stack-item:is(:hover, :focus-within) .stack-link {
+  /* Filled with the page's own colour: what is left is the letter's outside edge and nothing else. */
+  color: var(--ink);
+  -webkit-text-stroke-width: var(--stack-outline, 2px);
+  transition-duration: 0.3s;
+}
+
+/* The chosen title turns to face the visitor, as an outline. Written to outrank the hover rule above:
+   the pointer is still on the title at the moment it is chosen. */
+.stack[data-phase] .stack-item.stack-item[data-selected] .stack-plane {
+  transform: rotateY(0deg) translateZ(0) scale(1);
+}
+
+.stack[data-phase] .stack-item.stack-item[data-selected] .stack-link {
+  color: var(--ink);
+  -webkit-text-stroke-width: var(--stack-outline, 2px);
+}
+
+@media (min-width: 421px) {
+  .stack-stage {
+    padding-top: 17vw;
+    padding-bottom: 17vw;
+  }
+
+  .stack-link {
+    font-size: 9.6vw;
+    letter-spacing: 0.02em;
+  }
+
+  .stack-info {
+    top: 3.7em;
+    left: -250px;
+    font-size: max(0.7vw, 9px);
+  }
+
+  .stack-slash {
+    top: 0.23em;
+    left: -0.3em;
+  }
+}
+
+@media (max-width: 420px) {
+  .stack-stage {
+    padding-top: 25vw;
+    padding-bottom: 17vw;
+  }
+
+  .stack-list {
+    width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  /* A gentler angle of view on phones, where the full swing would squeeze the titles too far. */
+  .stack {
+    perspective: 400vw;
+  }
+}
+
+@media (min-width: 768px) {
+  .stack-stage {
+    padding: 5vw 5vw calc(7.5vw + 67px) 0;
+  }
+
+  .stack-plane {
+    transition: transform 1.5s cubic-bezier(0.075, 0.82, 0.165, 1);
+  }
+
+  .stack-link {
+    font-size: 7.4vw;
+    -webkit-text-stroke-width: 2px;
+    /* Twice the line that should be seen: the inner half is under the fill. */
+    --stack-outline: 3px;
+  }
+
+  .stack-slash {
+    width: 2px;
+  }
+}
+
+@media (min-width: 1321px) {
+  .stack-link {
+    font-size: 9.6vw;
+    -webkit-text-stroke-width: 3px;
+    --stack-outline: 4px;
+  }
+}
+
+/* ---- arriving: the whole stage drops in from above while each title swings in, bottom title first */
+html.motion .stack[data-phase="wait"] .stack-plane {
+  visibility: hidden;
+}
+
+html.motion .stack[data-phase="intro"] .stack-stage {
+  transform: translate3d(0, -110%, 0);
+  animation: stack-drop 2s forwards;
+}
+
+html.motion .stack[data-phase="intro"] .stack-plane {
+  visibility: hidden;
+  transition: none;
+  animation: stack-swing-in 2s forwards;
+  animation-delay: var(--stack-delay, 0.2s);
+}
+
+@keyframes stack-drop {
+  from {
+    transform: translate3d(0, -110%, 0);
+  }
+  to {
+    transform: translateZ(0);
+  }
+}
+
+@keyframes stack-swing-in {
+  from {
+    visibility: visible;
+    opacity: 0;
+    transform: rotateY(-100deg) translateZ(0) scale(1);
+  }
+  to {
+    visibility: visible;
+    opacity: 1;
+    transform: rotateY(-45deg) translateZ(0) scale(1);
+  }
+}
+
+/* ---- leaving: the other titles swing shut and fade, bottom first; the chosen one shrinks away; the stage lifts */
+html.motion .stack[data-phase^="outro"] .stack-container {
+  animation: stack-lift 0.5s cubic-bezier(0.39, 0.575, 0.565, 1) 1.15s forwards;
+}
+
+html.motion .stack[data-phase^="outro"] .stack-plane {
+  transition:
+    transform 1.5s cubic-bezier(0.075, 0.82, 0.165, 1),
+    opacity 1.5s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+html.motion .stack[data-phase^="outro"] .stack-item:not([data-selected]) .stack-plane {
+  transform: rotateY(-114deg) translateZ(0) scale(1);
+  opacity: 0;
+  transition-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  transition-duration: 0.25s;
+  transition-delay: var(--stack-delay, 0.2s);
+}
+
+html.motion .stack[data-phase^="outro"] .stack-item.stack-item[data-selected] .stack-plane {
+  transform: rotateY(0deg) translateZ(0) scale(0.7);
+  opacity: 0;
+  transition-duration: 0.5s;
+  transition-delay: 1s;
+}
+
+html.motion .stack[data-phase^="outro"] .stack-item[data-selected] :is(.stack-info, .stack-slash) {
+  opacity: 0;
+  transition: opacity 0.2s ease-out 0.15s;
+}
+
+/* Leaving by some other link: the same cascade, in half the time, to fit the standard exit. */
+html.motion .stack[data-phase="outro-fast"] .stack-container {
+  animation-delay: 0.45s;
+}
+
+html.motion .stack[data-phase="outro-fast"] .stack-item:not([data-selected]) .stack-plane {
+  transition-delay: calc(var(--stack-delay, 0.2s) * 0.5);
+}
+
+@keyframes stack-lift {
+  from {
+    transform: translateZ(0);
+  }
+  to {
+    transform: translate3d(0, -25vh, 0);
+  }
+}

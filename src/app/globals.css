@@ -1,0 +1,601 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Two-colour system, as on the reference: an "ink" ground and a "paper"
+   foreground, everything else an opacity of paper. The values come from
+   the palette: black #171717, light gray #DEDEDE, dark gray #4D4D4D and
+   orange #F25623 as the one accent. The light theme swaps ink and paper.
+------------------------------------------------------------------- */
+:root {
+  --black: #171717;
+  --orange: #f25623;
+  --graphite: #4d4d4d;
+  --ash: #dedede;
+
+  --ink: var(--black);
+  --paper: var(--ash);
+  --stage: #1d1d1d;
+  --accent: var(--orange);
+  /* Orange for small text. On the dark ground the brand orange is readable as it is. */
+  --accent-text: var(--orange);
+  --on-accent: var(--black);
+  --line: color-mix(in srgb, var(--paper) 12%, transparent);
+  --line-strong: color-mix(in srgb, var(--paper) 28%, transparent);
+
+  --frame: 8px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --ink: var(--ash);
+  --paper: var(--black);
+  --stage: #d3d3d3;
+  /* On light gray the brand orange is too pale for small text (2.6:1); this deeper cut reaches 4.5:1. */
+  --accent-text: #b03a12;
+  --line: color-mix(in srgb, var(--paper) 16%, transparent);
+  --line-strong: color-mix(in srgb, var(--paper) 34%, transparent);
+  color-scheme: light;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --frame: 4px;
+  }
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-stage: var(--stage);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-on-accent: var(--on-accent);
+
+  /* Aliases kept for the inner pages. */
+  --color-bg: var(--ink);
+  --color-fg: var(--paper);
+  --color-muted: color-mix(in srgb, var(--paper) 70%, var(--ink));
+  --color-faint: color-mix(in srgb, var(--paper) 55%, var(--ink));
+
+  --font-display: var(--font-big-shoulders), "Arial Narrow", sans-serif;
+  --font-sans: var(--font-geist), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --font-wide: var(--font-unbounded), "Arial Black", sans-serif;
+
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-blink: blink 1.1s steps(2, start) infinite;
+}
+
+/* ------------------------------------------------------------------ base */
+@layer base {
+  html {
+    background: var(--ink);
+    min-height: 100%;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    scroll-padding-top: 4rem;
+  }
+
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* The hairline frame that sits just inside the viewport on every page. */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: var(--frame);
+    border: 1px solid var(--line-strong);
+    pointer-events: none;
+    z-index: 60;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  :focus-visible {
+    outline: 1px solid var(--paper);
+    outline-offset: 3px;
+  }
+
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+}
+
+/* ------------------------------------------------------------ utilities */
+@utility gutter {
+  padding-inline: 1rem;
+  @media (min-width: 40rem) {
+    padding-inline: 1.5rem;
+  }
+  @media (min-width: 48rem) {
+    padding-inline: 2.5rem;
+  }
+}
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--paper) 60%, transparent);
+}
+
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+}
+
+@utility heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.95;
+}
+
+/* Kept for the inner pages; same face as `heading`. */
+@utility display-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.98;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------ components */
+@layer components {
+  .btn-solid,
+  .btn-ghost,
+  .btn-accent,
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-ghost,
+  .btn {
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--paper) 6%, transparent);
+    color: var(--paper);
+  }
+
+  .btn-ghost:hover,
+  .btn:hover {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .btn-solid,
+  .btn.btn-solid {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--paper);
+  }
+
+  .btn-solid:hover,
+  .btn.btn-solid:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  /* The orange button: one per view, for the main action. */
+  .btn-accent {
+    background: var(--accent);
+    color: var(--on-accent);
+    border: 1px solid var(--accent);
+  }
+
+  .btn-accent:hover {
+    background: var(--paper);
+    border-color: var(--paper);
+    color: var(--ink);
+  }
+
+  /* Shaped like a button, but a note: work that is not public yet. */
+  .site-soon,
+  .site-soon:hover {
+    border-style: dashed;
+    border-color: var(--line-strong);
+    background: transparent;
+    color: color-mix(in srgb, var(--paper) 72%, transparent);
+    cursor: default;
+  }
+
+  .btn[disabled],
+  .btn-solid[disabled] {
+    cursor: wait;
+    opacity: 0.6;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--line);
+    padding: 0.25rem 0.625rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: color-mix(in srgb, var(--paper) 70%, transparent);
+    transition:
+      color 0.2s,
+      border-color 0.2s;
+  }
+
+  .chip:hover {
+    border-color: var(--accent);
+    color: var(--paper);
+  }
+
+  /* "+" registration marks on two opposite corners of a box. */
+  .crosshair {
+    position: relative;
+  }
+
+  .crosshair::before,
+  .crosshair::after {
+    content: "+";
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1;
+    color: var(--accent);
+    pointer-events: none;
+  }
+
+  .crosshair::before {
+    top: -8px;
+    left: -5px;
+  }
+
+  .crosshair::after {
+    bottom: -8px;
+    right: -5px;
+  }
+
+  /* Registration cross used by the older inner-page boxes. */
+  .plus {
+    color: color-mix(in srgb, var(--paper) 45%, transparent);
+    background:
+      linear-gradient(currentColor, currentColor) center / 100% 1px no-repeat,
+      linear-gradient(currentColor, currentColor) center / 1px 100% no-repeat;
+  }
+
+  /* Film grain over the hero. */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.07;
+    mix-blend-mode: screen;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  .text-outline {
+    color: transparent;
+    -webkit-text-stroke: 1px color-mix(in srgb, var(--paper) 55%, transparent);
+  }
+
+  .text-outline-strong {
+    color: color-mix(in srgb, var(--ink) 55%, transparent);
+    -webkit-text-stroke: 1px var(--paper);
+  }
+
+  /* The same outline, drawn in orange. */
+  .text-outline-accent {
+    color: color-mix(in srgb, var(--ink) 55%, transparent);
+    -webkit-text-stroke: 1px var(--accent);
+  }
+
+  @media (min-width: 64rem) {
+    .text-outline-strong,
+    .text-outline-accent {
+      -webkit-text-stroke-width: 1.5px;
+    }
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, var(--line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  .bg-dots,
+  .lattice {
+    background-image: radial-gradient(color-mix(in srgb, var(--paper) 18%, transparent) 1px, transparent 1.2px);
+    background-size: 6px 6px;
+  }
+
+  /* Underline that draws from the left on hover (inner pages). */
+  .link-line {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    transition: background-size 0.45s var(--ease);
+  }
+
+  .link-line:hover,
+  .link-line:focus-visible {
+    background-size: 100% 1px;
+  }
+
+  /* Custom cursor: a lagging reticle and a dot, on mouse devices only. */
+  html.has-cursor,
+  html.has-cursor * {
+    cursor: none !important;
+  }
+
+  html.has-cursor input,
+  html.has-cursor textarea {
+    cursor: text !important;
+  }
+
+  .cursor-ring-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    margin: -17px 0 0 -17px;
+    border: 1px solid color-mix(in srgb, #dedede 50%, transparent);
+    border-radius: 999px;
+    mix-blend-mode: difference;
+    transition:
+      width 0.45s var(--ease),
+      height 0.45s var(--ease),
+      margin 0.45s var(--ease),
+      background-color 0.3s,
+      border-color 0.3s;
+  }
+
+  .cursor-ring[data-state="hover"] .cursor-ring-inner {
+    width: 56px;
+    height: 56px;
+    margin: -28px 0 0 -28px;
+    border-color: #dedede;
+  }
+
+  /* Light theme: the reticle is the brand orange at rest. It is not blended there, or the orange would shift on the pale ground. */
+  :root[data-theme="light"] .cursor-ring-inner,
+  :root[data-theme="light"] .cursor-ring[data-state="hover"] .cursor-ring-inner {
+    border-color: var(--accent);
+    /* Two pixels: on screens scaled to 125% a thinner line is rounded down to a hairline. */
+    border-width: 2px;
+    mix-blend-mode: normal;
+  }
+
+  /* Over something that can be pressed it turns black, so it still shows on the orange that many hovers turn to. */
+  :root[data-theme="light"] .cursor-ring[data-state="hover"] .cursor-ring-inner {
+    border-color: var(--black);
+  }
+
+  /* The word circle ("View", "Meet"): smoked glass, the same in both themes. It
+     blurs what is behind it rather than covering it, and its dark tint reads on
+     the orange of a hover, on pale ash and on pictures alike; on the dark ground
+     the bright rim and the sheen on the upper left give it its edge. */
+  .cursor-ring[data-state="label"] .cursor-ring-inner {
+    width: 96px;
+    height: 96px;
+    margin: -48px 0 0 -48px;
+    border: 1px solid rgb(255 255 255 / 0.38);
+    /* Clearest at the rim, a little denser behind the word so it reads over pale pictures too. */
+    background:
+      linear-gradient(140deg, rgb(255 255 255 / 0.26), rgb(255 255 255 / 0.04) 45%, transparent 70%),
+      radial-gradient(circle, rgb(23 23 23 / 0.6) 0 24%, rgb(23 23 23 / 0.2) 72%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.32),
+      inset 0 -10px 24px rgb(0 0 0 / 0.14),
+      0 10px 30px rgb(0 0 0 / 0.2);
+    /* Soft enough that the shapes behind still read through it. */
+    -webkit-backdrop-filter: blur(4px) saturate(1.5);
+    backdrop-filter: blur(4px) saturate(1.5);
+    mix-blend-mode: normal;
+  }
+
+  :root[data-theme="light"] .cursor-ring[data-state="label"] .cursor-ring-inner {
+    border-width: 1px;
+  }
+
+  .cursor-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #f4f4f4;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+    opacity: 0;
+    transform: scale(0.6);
+    transition:
+      opacity 0.25s,
+      transform 0.35s var(--ease);
+  }
+
+  .cursor-ring[data-state="label"] .cursor-label {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* PixelFigure: the accent version shows through a circle under the pointer. */
+  .pixel-reveal {
+    clip-path: circle(0% at var(--rx, 50%) var(--ry, 50%));
+    transition: clip-path 0.9s var(--ease);
+  }
+
+  @media (hover: hover) {
+    .group\/pixel:hover .pixel-reveal {
+      clip-path: circle(22% at var(--rx, 50%) var(--ry, 50%));
+    }
+  }
+
+  /* The loader already played this session: never show it again on reload. */
+  html.loaded .site-loader {
+    display: none;
+  }
+
+  /* Failsafe: if scripts never take over, the loader still gets out of the way. */
+  .site-loader {
+    animation: loader-failsafe 1ms linear 8s forwards;
+  }
+}
+
+/* -------------------------------------------------------------- motion */
+/* `motion` is set on <html> by an inline script only when the visitor has
+   not asked for reduced motion and scripts can run. Without it everything
+   below is simply visible. These are the start states GSAP animates from. */
+.char {
+  display: inline-block;
+  will-change: transform;
+}
+
+html.motion .char {
+  transform: translateY(115%);
+}
+
+html.motion .reveal,
+html.motion [data-reveal] {
+  opacity: 0;
+}
+
+html.motion .animate-in {
+  opacity: 0;
+}
+
+/* From first paint until the entrances are set up (a few frames), the page is kept unseen, so nothing is shown
+   flat, then hidden, then shown rising. The class is put on by the script in <head> and taken off by Motion;
+   the same script takes it off after four seconds if Motion never runs. */
+html.motion.pre-enter #main,
+html.motion.pre-enter body > footer {
+  opacity: 0;
+}
+
+@keyframes blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+@keyframes loader-failsafe {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* Theme switch: the new theme opens as a circle from the switch. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  clip-path: circle(0 at var(--vt-x, 100%) var(--vt-y, 0%));
+  animation: theme-reveal 0.75s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes theme-reveal {
+  to {
+    clip-path: circle(150vmax at var(--vt-x, 100%) var(--vt-y, 0%));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  ::view-transition-new(root) {
+    animation: none;
+    clip-path: none;
+  }
+}
+
+/* --------------------------------------------------------------- lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* --------------------------------------------------------------- print */
+@media print {
+  :root,
+  :root[data-theme="light"] {
+    --ink: #ffffff;
+    --paper: #171717;
+    --stage: #ffffff;
+    --line: #cfcfcf;
+    --line-strong: #9a9a9a;
+  }
+
+  body::after {
+    display: none;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  html.motion .char,
+  html.motion .reveal,
+  html.motion [data-reveal],
+  html.motion [data-entering],
+  html.motion [data-chars],
+  html.motion .animate-in {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  body {
+    font-size: 10.5pt;
+  }
+}

@@ -1,0 +1,166 @@
+/* ------------------------------------------------ the way to "Meet the developer"
+   (MeetLink.tsx). Words only, drawn in the reverse of the page's colours (ash on
+   the dark theme, black on the light one) so it stands apart while staying
+   still. A small orange square is its only ornament. On hover an orange fill
+   sweeps in from the left and the arrow passes out through its corner while a
+   second one follows it in. */
+
+.meet-link {
+  --meet-text: var(--ink);
+  --meet-soft: color-mix(in srgb, var(--ink) 62%, var(--paper));
+  --meet-mark: var(--accent);
+  --meet-speed: 0.75s;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--paper);
+  background: var(--paper);
+  color: var(--meet-text);
+  transition:
+    color var(--meet-speed) var(--ease),
+    border-color var(--meet-speed) var(--ease);
+}
+
+/* The orange fill: in from the left, out to the right. */
+.meet-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform var(--meet-speed) var(--ease);
+}
+
+.meet-link:is(:hover, :focus-visible) {
+  --meet-text: var(--on-accent);
+  --meet-soft: color-mix(in srgb, var(--on-accent) 78%, var(--accent));
+  --meet-mark: var(--on-accent);
+  border-color: var(--accent);
+}
+
+.meet-link:is(:hover, :focus-visible)::after {
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
+/* The one ornament: a small orange square, which turns black on the orange fill. */
+.meet-mark {
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  background: var(--meet-mark);
+  transition:
+    background-color var(--meet-speed) var(--ease),
+    transform var(--meet-speed) var(--ease);
+}
+
+.meet-link:is(:hover, :focus-visible) .meet-mark {
+  transform: rotate(45deg);
+}
+
+/* The arrow passes out through the corner and the next one follows it in. */
+.meet-arrow {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 1rem;
+  height: 1rem;
+  overflow: hidden;
+}
+
+.meet-arrow > svg {
+  grid-area: 1 / 1;
+  transition: transform var(--meet-speed) var(--ease);
+}
+
+.meet-arrow-in {
+  transform: translate(-130%, 130%);
+}
+
+.meet-link:is(:hover, :focus-visible) .meet-arrow-out {
+  transform: translate(130%, -130%);
+}
+
+.meet-link:is(:hover, :focus-visible) .meet-arrow-in {
+  transform: none;
+}
+
+/* ---------------------------------------------------------------------- card */
+.meet-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  max-width: 24rem;
+  padding: 1.1rem 1.25rem 1.2rem;
+}
+
+.meet-card-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--meet-soft);
+  transition: color var(--meet-speed) var(--ease);
+}
+
+.meet-card-name {
+  display: block;
+  margin-top: 0.7rem;
+  font-size: clamp(1.75rem, 2.6vw, 2.4rem);
+  line-height: 1;
+}
+
+.meet-card-line {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  color: var(--meet-soft);
+  transition: color var(--meet-speed) var(--ease);
+}
+
+.meet-card .meet-arrow {
+  margin-top: 0.1rem;
+}
+
+/* ---------------------------------------------------------------------- chip */
+.meet-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.meet-chip .meet-arrow {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.meet-chip .meet-arrow > svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* ------------------------------------------------------------- the rest */
+@media (forced-colors: active) {
+  .meet-link::after {
+    display: none;
+  }
+
+  .meet-mark {
+    forced-color-adjust: none;
+    background: LinkText;
+  }
+}
