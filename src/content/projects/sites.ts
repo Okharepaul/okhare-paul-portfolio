@@ -5,9 +5,8 @@ import type { Project } from "./types";
  * Every technical fact is taken from the project's own code or documents
  * (20 Nov 2026); figures are quoted only where the project recorded them.
  *
- * TODO(owner): Gilmore, Datum, Jerrie Bones and Nova Adeyemi have no public
- * address on record. Add `site: { href: "https://…" }` to each once it is
- * known and the "Visit site" buttons appear on their own.
+ * Each one is live on the owner's Vercel account (21 Nov 2026); `site.href`
+ * gives the "View website" button wherever the project appears.
  */
 
 export const gilmore: Project = {
@@ -22,6 +21,7 @@ export const gilmore: Project = {
   figure: "A hero you paint with the cursor, and a globe that needed no map library.",
   thumb: "/projects/gilmore.webp",
   video: "/projects/gilmore.mp4",
+  site: { href: "https://gilmore-studio.vercel.app" },
   preview: "/projects/gilmore-preview.mp4",
   summary:
     "A website for an independent design and engineering studio, built in Next.js 16 and TypeScript, where the two signature pieces, the hero and the globe, are written by hand on a canvas.",
@@ -71,6 +71,7 @@ export const datum: Project = {
   figure: "Same engine, new identity: ruled, measured and scrubbed by the scroll.",
   thumb: "/projects/datum.webp",
   video: "/projects/datum.mp4",
+  site: { href: "https://datum-product-studio.vercel.app" },
   preview: "/projects/datum-preview.mp4",
   summary:
     "A complete rebrand carried out in code: an existing studio site turned into Datum, an engineering-led product studio, with a new name, voice, type, colour and motion, following a 31-page brand guide.",
@@ -119,6 +120,7 @@ export const jerrieBones: Project = {
   figure: "Photograph to pencil drawing, in one sweep of a shader.",
   thumb: "/projects/jerrie-bones.webp",
   video: "/projects/jerrie-bones.mp4",
+  site: { href: "https://jerrie-bones.vercel.app" },
   preview: "/projects/jerrie-bones-preview.mp4",
   summary:
     "A one-page portfolio for a painter, illustrator and draughtsman, where the hero photograph turns into a pencil drawing under your hand. The effect is a shader I wrote in raw WebGL, with no 3D library.",
@@ -171,6 +173,7 @@ export const novaAdeyemi: Project = {
   thumb: "/projects/nova-adeyemi.webp",
   hasWideThumb: true,
   video: "/projects/nova-adeyemi.mp4",
+  site: { href: "https://nova-adeyemi.vercel.app" },
   preview: "/projects/nova-adeyemi-preview.mp4",
   summary:
     "A design concept: the website of an aerobatic display pilot who does not exist. Nine pages, a 3D helmet built entirely in code, and an animation engine written from scratch.",

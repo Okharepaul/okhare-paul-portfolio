@@ -26,7 +26,7 @@ export function SiteLink({ site, title, variant = "btn-ghost", className = "" }:
   }
   return (
     <a href={site.href} target="_blank" rel="noopener noreferrer" data-magnetic className={`group/site ${variant} ${className}`}>
-      Visit site
+      View website
       <span className="sr-only">: {title} (opens in a new tab)</span>
       <Arrow direction="up-right" className="size-3! transition-transform duration-300 group-hover/site:translate-x-0.5 group-hover/site:-translate-y-0.5" />
     </a>
