@@ -460,5 +460,5 @@ Owner's request: the four client sites now live on his Vercel account get a "Vie
 
 - **Links (`src/content/projects/sites.ts`).** Gilmore: gilmore-studio.vercel.app. Datum: datum-product-studio.vercel.app. Jerrie Bones: jerrie-bones.vercel.app. Nova Adeyemi: nova-adeyemi.vercel.app. All checked live (200) on 21 Nov.
 - **Wording.** The button reads "View website" (was "Visit site") everywhere: home Selected projects, the case-study header (orange) and the closing strip.
-- **Projects index.** Each live project now has a small outline "View website" button under its title, on the same turned plane, so it tilts with the title. It fades out while the stack arrives or leaves, and opens in a new tab without starting the case-study exit. Coming-soon projects show nothing there.
+- **Projects index.** No button. A small "View website" button under each title was tried and removed the same day at the owner's request: the index stays titles only, and the button lives on the home cards and the case studies.
 - **The portfolio itself** is live at okhare-paul.vercel.app (Vercel project `okhare-paul`, auto-deploys from `main`).

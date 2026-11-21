@@ -324,22 +324,3 @@ html.motion .stack[data-phase="outro-fast"] .stack-item:not([data-selected]) .st
     transform: translate3d(0, -25vh, 0);
   }
 }
-
-/* A live project's way out, under its title on the same turned plane: small, so the titles stay the list. */
-.stack-site {
-  display: flex;
-  justify-content: flex-end;
-  margin: 0.9rem 0 2.2rem;
-  transition: opacity 0.4s;
-}
-
-.stack-site .btn-ghost {
-  padding: 0.5rem 0.9rem;
-  font-size: 11px;
-}
-
-/* Gone while the stack arrives or leaves, so it never trails a title that is moving. */
-.stack:not([data-phase="idle"]) .stack-site {
-  opacity: 0;
-  pointer-events: none;
-}

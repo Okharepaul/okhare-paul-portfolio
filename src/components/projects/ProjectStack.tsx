@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type 
 import Link from "next/link";
 import { pad2, projects } from "@/content/projects";
 import { prefersReducedMotion } from "@/lib/motion";
-import { SiteLink } from "@/components/projects/SiteLink";
 import { isSiteReady, onSiteReady } from "@/lib/ready";
 import {
   LEAVE_CANCELLED_EVENT,
@@ -220,11 +219,6 @@ export function ProjectStack({ aside }: ProjectStackProps) {
                       ))}
                       <span className="sr-only">: {project.tagline}</span>
                     </Link>
-                    {project.site && project.site !== "soon" ? (
-                      <div className="stack-site">
-                        <SiteLink site={project.site} title={project.title} />
-                      </div>
-                    ) : null}
                   </div>
                 </li>
               ))}
