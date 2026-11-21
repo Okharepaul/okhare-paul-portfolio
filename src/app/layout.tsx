@@ -8,11 +8,14 @@ import { Loader } from "@/components/shell/Loader";
 import { Motion } from "@/components/shell/Motion";
 import { PageTransition } from "@/components/shell/PageTransition";
 import { ScrollBar } from "@/components/shell/ScrollBar";
+import { ThemeClock } from "@/components/shell/ThemeClock";
 import { site } from "@/content/site";
+import { THEME_BOOT_SCRIPT } from "@/lib/theme-clock";
 import "./globals.css";
 import "./transitions.css";
 import "./scrollbar.css";
 import "./meet-link.css";
+import "./site-menu.css";
 
 const display = Big_Shoulders({
   subsets: ["latin"],
@@ -52,11 +55,13 @@ export const viewport: Viewport = {
 };
 
 /**
- * Runs before first paint so the saved theme never flashes. It also flags
+ * Runs before first paint so the theme never flashes: light 07:00 to 19:00
+ * on the visitor's clock, dark otherwise, unless they picked one that is
+ * still in force (see theme-clock.ts). It also flags
  * whether motion is allowed and whether the loader already played this session.
  * Static string written here, no user input: safe to inline.
  */
-const bootScript = `(function(){try{var d=document.documentElement;var t=localStorage.getItem("op:theme");if(t==="light"||t==="dark")d.dataset.theme=t;if(sessionStorage.getItem("op:loaded")==="1")d.classList.add("loaded");if(!matchMedia("(prefers-reduced-motion: reduce)").matches){d.classList.add("motion","pre-enter");setTimeout(function(){if(!window.__motionReady)d.classList.remove("motion","pre-enter")},4000)}}catch(e){}})();`;
+const bootScript = `(function(){try{${THEME_BOOT_SCRIPT}if(sessionStorage.getItem("op:loaded")==="1")d.classList.add("loaded");if(!matchMedia("(prefers-reduced-motion: reduce)").matches){d.classList.add("motion","pre-enter");setTimeout(function(){if(!window.__motionReady)d.classList.remove("motion","pre-enter")},4000)}}catch(e){}})();`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -86,6 +91,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <Footer />
         <BackToTop />
         <ScrollBar />
+        <ThemeClock />
         <PageTransition />
         <Motion />
       </body>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { contactHref, hire, nav, site } from "@/content/site";
@@ -119,38 +119,46 @@ export function Header() {
             aria-controls="site-menu"
             onClick={() => setMenuOpenedOn(isMenuOpen ? null : pathname)}
           >
-            {isMenuOpen ? "Close" : "Menu"}
+            <span className="menu-label">
+              <span aria-hidden={isMenuOpen}>Menu</span>
+              <span aria-hidden={!isMenuOpen}>Close</span>
+            </span>
           </button>
         </div>
       </nav>
 
       <div
         id="site-menu"
-        hidden={!isMenuOpen}
-        className="fixed inset-x-0 top-14 z-10 flex h-[calc(100svh-3.5rem)] flex-col justify-between overflow-y-auto bg-ink px-4 pt-8 pb-8 sm:px-6 md:hidden"
+        data-open={isMenuOpen ? "" : undefined}
+        inert={!isMenuOpen}
+        className="site-menu fixed inset-x-0 top-14 z-10 h-[calc(100svh-3.5rem)] overflow-y-auto bg-ink px-4 pt-8 pb-8 sm:px-6 md:hidden"
       >
-        <ul className="flex flex-col">
-          {nav.map((item) => (
-            <li key={item.href}>
-              <Link href={item.href} onClick={closeMenu} className="display flex items-baseline gap-6 border-b border-line py-4 text-6xl">
-                <span className="label text-accent-text">{item.index}</span>
-                {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <div className="flex flex-col gap-4">
-          <Link href={hire.href} onClick={closeMenu} className="btn-accent justify-between">
-            {hire.label}
-            <Arrow />
-          </Link>
-          <Link href={contactHref} onClick={closeMenu} className="btn-solid justify-between">
-            Let&apos;s talk
-            <Arrow />
-          </Link>
-          <p className="label">
-            {site.location.full} · {site.location.coords}
-          </p>
+        <div className="site-menu-inner flex min-h-full flex-col justify-between gap-10">
+          <ul className="flex flex-col">
+            {nav.map((item, index) => (
+              <li key={item.href} className="site-menu-row" style={{ "--i": index } as CSSProperties}>
+                <Link href={item.href} onClick={closeMenu} className="display flex items-baseline gap-6 py-4 text-6xl">
+                  <span className="site-menu-index label text-accent-text">{item.index}</span>
+                  <span className="site-menu-mask">
+                    <span className="site-menu-word">{item.label}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="site-menu-foot flex flex-col gap-4">
+            <Link href={hire.href} onClick={closeMenu} className="btn-accent justify-between" style={{ "--j": 0 } as CSSProperties}>
+              {hire.label}
+              <Arrow />
+            </Link>
+            <Link href={contactHref} onClick={closeMenu} className="btn-solid justify-between" style={{ "--j": 1 } as CSSProperties}>
+              Let&apos;s talk
+              <Arrow />
+            </Link>
+            <p className="label" style={{ "--j": 2 } as CSSProperties}>
+              {site.location.full} · {site.location.coords}
+            </p>
+          </div>
         </div>
       </div>
     </header>

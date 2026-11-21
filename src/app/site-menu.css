@@ -1,0 +1,152 @@
+/* The small-screen menu. Opening, the panel drops from under the header like a blind, its rules draw across,
+   and each page name rises out of its own line, one after another; the two buttons and the place line follow.
+   Closing runs the other way, faster: the words sink, then the blind rolls back up. The panel stays in the page
+   when closed (hidden and inert), so it can animate both ways. */
+
+.site-menu {
+  --menu-in: 0.72s;
+  --menu-out: 0.42s;
+  --menu-ease-out: cubic-bezier(0.7, 0, 0.84, 0);
+  clip-path: inset(0 0 100% 0);
+  visibility: hidden;
+  transition:
+    clip-path var(--menu-out) var(--menu-ease-out) 0.08s,
+    visibility 0s linear calc(var(--menu-out) + 0.08s);
+}
+
+.site-menu[data-open] {
+  clip-path: inset(0 0 0 0);
+  visibility: visible;
+  transition:
+    clip-path var(--menu-in) var(--ease),
+    visibility 0s;
+}
+
+/* The whole sheet settles a little as the blind drops, so it lands rather than appears. */
+.site-menu-inner {
+  transform: translateY(-1.5rem);
+  transition: transform var(--menu-out) var(--menu-ease-out);
+}
+
+.site-menu[data-open] .site-menu-inner {
+  transform: none;
+  transition: transform 0.9s var(--ease);
+}
+
+/* Each row: its rule draws from the left, and its name rises out of the line it sits on. */
+.site-menu-row {
+  position: relative;
+}
+
+.site-menu-row::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: var(--line);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s var(--menu-ease-out);
+}
+
+.site-menu[data-open] .site-menu-row::after {
+  transform: scaleX(1);
+  transition: transform 0.9s var(--ease) calc(0.18s + var(--i, 0) * 0.07s);
+}
+
+.site-menu-mask {
+  display: block;
+  overflow: hidden;
+  /* Room for the descenders, taken back so the rows keep their spacing. */
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.site-menu-word {
+  display: inline-block;
+  transform: translateY(105%) rotate(4deg);
+  transform-origin: left bottom;
+  transition: transform 0.32s var(--menu-ease-out);
+}
+
+.site-menu[data-open] .site-menu-word {
+  transform: none;
+  transition: transform 0.85s var(--ease) calc(0.16s + var(--i, 0) * 0.07s);
+}
+
+.site-menu-index {
+  opacity: 0;
+  transform: translateX(-0.75rem);
+  transition:
+    opacity 0.2s linear,
+    transform 0.3s var(--menu-ease-out);
+}
+
+.site-menu[data-open] .site-menu-index {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.5s linear calc(0.32s + var(--i, 0) * 0.07s),
+    transform 0.7s var(--ease) calc(0.32s + var(--i, 0) * 0.07s);
+}
+
+/* The two buttons and the place line come up last. */
+.site-menu-foot > * {
+  opacity: 0;
+  transform: translateY(1rem);
+  transition:
+    opacity 0.2s linear,
+    transform 0.3s var(--menu-ease-out);
+}
+
+.site-menu[data-open] .site-menu-foot > * {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.6s linear calc(0.5s + var(--j, 0) * 0.08s),
+    transform 0.8s var(--ease) calc(0.5s + var(--j, 0) * 0.08s);
+}
+
+/* The menu button's word rolls over to the other one. */
+.menu-label {
+  display: grid;
+  overflow: hidden;
+}
+
+.menu-label > span {
+  grid-area: 1 / 1;
+  transition: transform 0.5s var(--ease);
+}
+
+.menu-label > span:last-child {
+  transform: translateY(110%);
+}
+
+[aria-expanded="true"] .menu-label > span:first-child {
+  transform: translateY(-110%);
+}
+
+[aria-expanded="true"] .menu-label > span:last-child {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-menu,
+  .site-menu *,
+  .site-menu *::after,
+  .menu-label > span {
+    transition-delay: 0s !important;
+  }
+
+  .site-menu,
+  .site-menu[data-open] {
+    clip-path: none;
+  }
+
+  .site-menu-inner,
+  .site-menu-word,
+  .site-menu-index,
+  .site-menu-foot > * {
+    transform: none;
+  }
+}

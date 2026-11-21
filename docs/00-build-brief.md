@@ -472,3 +472,8 @@ okharepaul.site lapsed at Hostinger (expired 4 Nov 2026, auto-renew off, release
 - **Legal.** The legal notice names Vercel as host; the privacy page names Resend (email) and Vercel (hosting). Retention period still waits on the owner.
 - **Domain renewal.** Auto-renew is off on Vercel ($27 a year from Nov 2027); the owner decides whether to turn it on.
 
+
+## Round 17 (21 Nov 2026, local only, not deployed): animated menu and a theme that follows the clock
+
+- **Small-screen menu.** The panel stays in the page (hidden and `inert` when closed) so it can animate both ways (`src/app/site-menu.css`). Opening: it drops from under the header like a blind, each rule draws across, each page name rises out of its own line one after another, then the two buttons and the place line. Closing runs back, faster. The Menu/Close word rolls over. With reduced motion it simply appears and goes.
+- **Theme by time of day.** Light from 07:00 to 18:59 and dark from 19:00 to 06:59, on the visitor's own clock in their own time zone (`src/lib/theme-clock.ts`). The script in `<head>` decides before first paint; `ThemeClock` flips it live at 7 o'clock and re-checks when the tab comes back. The DK/LT switch still works, but a pick holds only until the next 7 o'clock. Old stored picks (plain "dark"/"light") are ignored, so every returning visitor starts on the clock. Where the browser won't store anything (private mode), the pick is kept in memory for the visit so returning to the tab doesn't undo it.

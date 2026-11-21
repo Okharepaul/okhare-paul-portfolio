@@ -2,10 +2,10 @@
 
 import { useSyncExternalStore, type MouseEvent } from "react";
 import { prefersReducedMotion } from "@/lib/motion";
+import { THEME_STORAGE_KEY, overrideFor, type Theme } from "@/lib/theme-clock";
+import { rememberPick } from "./ThemeClock";
 
-export type Theme = "dark" | "light";
-
-export const THEME_STORAGE_KEY = "op:theme";
+export { THEME_STORAGE_KEY, type Theme };
 
 function readTheme(): Theme {
   return document.documentElement.dataset.theme === "light" ? "light" : "dark";
@@ -22,10 +22,14 @@ export function useTheme(): Theme {
   return useSyncExternalStore(subscribe, readTheme, () => "dark");
 }
 
+/** Shows the theme picked, and keeps it only until the next 7 o'clock (a pick matching the clock needs no keeping). */
 function applyTheme(theme: Theme): void {
   document.documentElement.dataset.theme = theme;
+  const pick = overrideFor(theme, new Date());
+  rememberPick(pick);
   try {
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    if (pick) window.localStorage.setItem(THEME_STORAGE_KEY, pick);
+    else window.localStorage.removeItem(THEME_STORAGE_KEY);
   } catch {
     // Private mode or blocked storage: the switch still works for this visit.
   }
@@ -36,7 +40,7 @@ const OPTIONS: readonly { value: Theme; label: string; short: string }[] = [
   { value: "light", label: "Light", short: "LT" },
 ];
 
-/** Dark | light switch. The new theme opens as a circle from where you clicked. */
+/** Dark | light switch. The new theme opens as a circle from where you clicked. The site otherwise follows the clock (ThemeClock). */
 export function ThemeToggle() {
   const theme = useTheme();
 
