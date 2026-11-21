@@ -135,28 +135,4 @@ export const labExperiments: readonly LabExperiment[] = [
     what: "The full dissertation demo: add drones, block a point, watch the swarm re-route.",
     tags: ["WebGL", "Reinforcement learning"],
   },
-  {
-    id: "E—02",
-    name: "Magnetic gears",
-    status: "Ongoing",
-    what: "A 3D model of my levitated drivetrain: gears that turn without touching.",
-    tags: ["Three.js", "Physics"],
-    awaiting: "Waiting on the CAD export",
-  },
-  {
-    id: "E—03",
-    name: "Solenoid engine",
-    status: "Stable",
-    what: "My ECS CAD Olympics entry, rotatable in the browser.",
-    tags: ["Three.js", "Autodesk Fusion export"],
-    awaiting: "Waiting on the CAD export",
-  },
-  {
-    id: "E—04",
-    name: "The first drone",
-    status: "Archived",
-    what: "My BEng delivery drone, photos and flight video.",
-    tags: ["Hardware"],
-    awaiting: "Waiting on photos and flight video",
-  },
 ];

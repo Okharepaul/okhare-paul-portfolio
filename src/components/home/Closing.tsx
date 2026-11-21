@@ -32,7 +32,7 @@ export function LabBand() {
             <SplitChars as="h2" id="lab-heading" text={labBand.heading} className="display mt-5 block text-[clamp(2.8rem,6.5vw,6rem)]" />
             <p className="label mt-4 text-paper/70">
               <span className="text-accent-text">{pad2(labComponents.length)}</span> components dissected ·{" "}
-              <span className="text-accent-text">{pad2(labExperiments.length)}</span> experiments
+              <span className="text-accent-text">{pad2(labExperiments.length)}</span> {labExperiments.length === 1 ? "experiment" : "experiments"}
             </p>
           </div>
           <Link href="/lab" data-magnetic className="btn-accent shrink-0 self-start md:self-auto">
