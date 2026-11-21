@@ -5,11 +5,11 @@ import { ProsePage, ProseSection } from "@/components/ui/Prose";
 
 export const metadata: Metadata = {
   title: "Privacy policy",
-  description: "What the contact form on okharepaul.site collects, why, and your rights under UK GDPR.",
+  description: "What the contact form on theokharepaul.site collects, why, and your rights under UK GDPR.",
 };
 
 /*
- * TODO(owner): confirm the retention period and the email provider before launch.
+ * TODO(owner): confirm the retention period. Email goes through Resend; the site is hosted on Vercel.
  * The wording below describes how the site is built today.
  */
 export default function PrivacyPolicyPage() {
@@ -41,7 +41,7 @@ export default function PrivacyPolicyPage() {
 
       <ProseSection title="Where it is stored and for how long">
         <p>
-          Your message is delivered to my inbox by an email delivery service acting on my behalf. The site itself keeps
+          Your message is delivered to my inbox by Resend, an email delivery service acting on my behalf. The site is hosted by Vercel. The site itself keeps
           no database of messages.
         </p>
         <p>

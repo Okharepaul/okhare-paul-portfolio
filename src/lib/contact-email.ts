@@ -74,13 +74,13 @@ export function contactEmailHtml({ input, sentAt, subject }: ContactEmailInput):
       ]),
     ),
     writtenBlock("Their message", message, "No message."),
-    closing({ action: reply, replyTo: email, footRight: "Contact form · okharepaul.site" }),
+    closing({ action: reply, replyTo: email, footRight: "Contact form · theokharepaul.site" }),
   ].join("\n");
 
   return emailDocument({
     title: subject,
     preheader: `${name} ${NEED_PHRASES[need]}. ${message.slice(0, 90)}`,
     body,
-    footnote: "Sent to you from the contact form on okharepaul.site. Replies go to the sender.",
+    footnote: "Sent to you from the contact form on theokharepaul.site. Replies go to the sender.",
   });
 }

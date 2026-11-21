@@ -178,6 +178,6 @@ export function buildEmailHtml(input: BuildEmailInput): string {
     title: input.subject,
     preheader: `${name} ${what} a ${build.type.label.toLowerCase()} build of ${build.parts.length} parts.`,
     body,
-    footnote: "Sent to you from the Build your stack page on okharepaul.site. Replies go to the client.",
+    footnote: "Sent to you from the Build your stack page on theokharepaul.site. Replies go to the client.",
   });
 }

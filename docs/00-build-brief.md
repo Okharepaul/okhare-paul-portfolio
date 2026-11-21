@@ -462,3 +462,13 @@ Owner's request: the four client sites now live on his Vercel account get a "Vie
 - **Wording.** The button reads "View website" (was "Visit site") everywhere: home Selected projects, the case-study header (orange) and the closing strip.
 - **Projects index.** No button. A small "View website" button under each title was tried and removed the same day at the owner's request: the index stays titles only, and the button lives on the home cards and the case studies.
 - **The portfolio itself** is live at okhare-paul.vercel.app (Vercel project `okhare-paul`, auto-deploys from `main`).
+
+## Round 16 (21 Nov 2026): the site's own domain, theokharepaul.site
+
+okharepaul.site lapsed at Hostinger (expired 4 Nov 2026, auto-renew off, release expected around 23 Jan 2027). The owner bought **theokharepaul.site** on Vercel instead, so domain, DNS, hosting and email all live on Vercel and Resend.
+
+- **Address.** `site.url` is `https://theokharepaul.site` (canonical, Open Graph, sitemap, robots, build links, CV). `www.theokharepaul.site` 308-redirects to it. okhare-paul.vercel.app still works.
+- **Email.** theokharepaul.site is verified in Resend (region eu-west-1; DKIM, send/rsend CNAMEs and DMARC `p=none` in Vercel DNS). Sender: `Okhare Paul <hello@theokharepaul.site>`; messages still arrive at the owner's Gmail and replies go to the visitor. There is no inbox at hello@: it only sends.
+- **Legal.** The legal notice names Vercel as host; the privacy page names Resend (email) and Vercel (hosting). Retention period still waits on the owner.
+- **Domain renewal.** Auto-renew is off on Vercel ($27 a year from Nov 2027); the owner decides whether to turn it on.
+

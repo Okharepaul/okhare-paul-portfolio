@@ -6,7 +6,7 @@
 export const site = {
   name: "Okhare Paul",
   legalName: "Okhare Paul Ogbomida",
-  url: "https://okharepaul.site",
+  url: "https://theokharepaul.site",
   title: "Okhare Paul — Full-Stack Engineer, Salford",
   description:
     "Full-stack engineer in Salford, Manchester. I build web apps, AI systems and brands, from the logo to the database.",

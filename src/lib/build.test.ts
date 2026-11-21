@@ -133,7 +133,7 @@ describe("the build in a link", () => {
 
   test("stays short enough for an email link", () => {
     projectTypes.forEach((type) => {
-      expect(buildLink("https://okharepaul.site", encodeBuild({ answers: everything(type.id), reference, issued })).length, type.id).toBeLessThan(700);
+      expect(buildLink("https://theokharepaul.site", encodeBuild({ answers: everything(type.id), reference, issued })).length, type.id).toBeLessThan(700);
     });
   });
 
@@ -187,7 +187,7 @@ describe("the build as text", () => {
   test("fits an email link however big the build or long the note, and never loses the link", () => {
     const client = { name: "N".repeat(80), business: "B".repeat(80) };
     projectTypes.forEach((type) => {
-      const link = buildLink("https://okharepaul.site", encodeBuild({ answers: everything(type.id), reference, issued }));
+      const link = buildLink("https://theokharepaul.site", encodeBuild({ answers: everything(type.id), reference, issued }));
       const brief = buildBrief(buildStack(everything(type.id))!, reference, { max: 900, client, note: "n".repeat(1000), link });
       expect(brief.length, type.id).toBeLessThanOrEqual(900);
       expect(brief, type.id).toContain(`Open the full build: ${link}`);
@@ -196,7 +196,7 @@ describe("the build as text", () => {
   });
 
   test("keeps a short note whole, and the answers when there is room", () => {
-    const link = buildLink("https://okharepaul.site", "code");
+    const link = buildLink("https://theokharepaul.site", "code");
     const brief = buildBrief(buildStack(answer(website, [["size", "size-small"]]))!, reference, { max: 900, client: { name: "Ada", business: "" }, note: "Hello.", link });
     expect(brief.startsWith("From Ada\n\nHello.\n\nBuild OP-BLD-2611-0473 · Website")).toBe(true);
     expect(brief).toContain("Pages: Up to 5 pages");

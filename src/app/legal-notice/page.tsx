@@ -5,10 +5,9 @@ import { ProsePage, ProseSection } from "@/components/ui/Prose";
 
 export const metadata: Metadata = {
   title: "Legal notice",
-  description: "Site owner, contact, hosting and copyright for okharepaul.site.",
+  description: "Site owner, contact, hosting and copyright for theokharepaul.site.",
 };
 
-/* TODO(owner): name the hosting provider once the site is deployed. */
 export default function LegalNoticePage() {
   return (
     <ProsePage label="Legal" title="Legal" updated="17 November 2026">
@@ -27,7 +26,7 @@ export default function LegalNoticePage() {
       </ProseSection>
 
       <ProseSection title="Hosting">
-        <p>The hosting provider is named here when the site goes live on {site.url.replace("https://", "")}.</p>
+        <p>This site is hosted by Vercel Inc. (vercel.com), which also registers its domain.</p>
       </ProseSection>
 
       <ProseSection title="Copyright">
