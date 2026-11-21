@@ -1,0 +1,796 @@
+/* ------------------------------------------------------------------ the build sheet
+   Laid out like the owner's own invoice (OP-2611-0473): a band with his mark and the document's
+   number, three cards, a striped table, what happens next beside the count, the terms and the
+   client's approval. No prices: where the invoice had them, the build has where each part came
+   from and a tick. Sizes are the invoice's, in CSS pixels of an A4 page (794px wide), so a print
+   fills one page, or two for a big build. Colours are the site's tokens: the band and the table's
+   head are the page's colours swapped, the count of parts is the accent. */
+
+.qs {
+  --qs-gap: 12px;
+  --qs-radius: 10px;
+  --qs-muted: color-mix(in srgb, var(--paper) 62%, transparent);
+  --qs-faint: color-mix(in srgb, var(--paper) 56%, transparent);
+  --qs-stripe: color-mix(in srgb, var(--paper) 4%, transparent);
+  --qs-band-line: color-mix(in srgb, var(--ink) 24%, transparent);
+  --qs-band-muted: color-mix(in srgb, var(--ink) 66%, transparent);
+  /* On a light band (the dark theme) the deeper orange keeps its contrast; on a black one, the site's own. */
+  --qs-band-accent: #b03a12;
+
+  container: qs / inline-size;
+  position: relative;
+  padding: 34px;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: var(--stage);
+  color: var(--paper);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The light stage is greyer, so the quieter text needs more ink to keep its contrast. */
+:root[data-theme="light"] .qs {
+  --qs-band-accent: var(--orange);
+  --qs-muted: color-mix(in srgb, var(--paper) 78%, transparent);
+  --qs-faint: color-mix(in srgb, var(--paper) 68%, transparent);
+}
+
+.qs p,
+.qs dl,
+.qs dd,
+.qs ul {
+  margin: 0;
+}
+
+.qs-label {
+  margin-bottom: 8px;
+  color: var(--qs-faint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.qs-dots {
+  position: absolute;
+  top: 13px;
+  right: 14px;
+  display: flex;
+  gap: 3px;
+}
+
+.qs-dots span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.qs-icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+/* ------------------------------------------------------------------ the band */
+.qs-band {
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.qs-band-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: var(--qs-gap);
+}
+
+.qs-band-card {
+  position: relative;
+  min-width: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--qs-band-line);
+  border-radius: var(--qs-radius);
+}
+
+.qs-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-right: 40px;
+}
+
+.qs-brand .qs-dots span {
+  background: var(--qs-band-accent);
+}
+
+/* The mark at its own proportions (204 by 172), so nothing of it is cut off. */
+.qs-logo {
+  flex: none;
+  width: 64px;
+  height: 54px;
+  color: var(--ink);
+}
+
+.qs-wordmark {
+  font-family: var(--font-wide);
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.qs-wordmark-accent {
+  color: var(--qs-band-accent);
+}
+
+.qs-tagline {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid var(--qs-band-line);
+  color: var(--qs-band-muted);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.qs-title-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  padding-right: 30px;
+  text-align: right;
+}
+
+.qs-title {
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 0.86;
+  text-transform: uppercase;
+  outline: none;
+}
+
+.qs-number {
+  margin-top: 8px;
+  color: var(--qs-band-muted);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.qs-chevron {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 7px;
+  height: 11px;
+  opacity: 0.6;
+  translate: 0 -50%;
+}
+
+.qs-contact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 22px;
+  margin-top: 10px;
+  padding: 8px 16px;
+  border: 1px solid var(--qs-band-line);
+  border-radius: 999px;
+  font-size: 11.5px;
+}
+
+.qs-contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.qs-issued {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------------------------ the three cards */
+.qs-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--qs-gap);
+  margin-top: var(--qs-gap);
+}
+
+.qs-card {
+  position: relative;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--qs-radius);
+}
+
+.qs-client {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.qs-faint {
+  color: var(--qs-faint);
+}
+
+.qs-strong {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.qs-strong-sm {
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.qs-muted {
+  margin-top: 4px;
+  color: var(--qs-muted);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.qs-facts {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 12px;
+  align-items: baseline;
+}
+
+.qs-facts dt {
+  color: var(--qs-muted);
+  font-size: 11px;
+}
+
+.qs-facts dd {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------------ the table */
+.qs-table-wrap {
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--qs-radius);
+}
+
+.qs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.qs-table thead tr {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.qs-table th {
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.qs-table td {
+  padding: 9px 12px;
+  vertical-align: top;
+}
+
+.qs-table tbody tr + tr {
+  border-top: 1px solid var(--line);
+}
+
+.qs-table tbody tr:nth-child(even) {
+  background: var(--qs-stripe);
+}
+
+.qs-table .qs-col-n {
+  width: 44px;
+  color: var(--qs-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.qs-table th.qs-col-n {
+  color: inherit;
+}
+
+.qs-table .qs-col-part {
+  width: 104px;
+}
+
+.qs-table .qs-col-in {
+  width: 44px;
+  text-align: center;
+}
+
+.qs-table td.qs-col-part,
+.qs-table td.qs-col-in {
+  padding-top: 10px;
+}
+
+/* Where a part came from, as a small tag; the core work every build of the kind needs is filled. */
+.qs-part {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.qs-part[data-core="true"] {
+  border-color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.qs-tick {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  color: var(--accent-text);
+}
+
+.qs-item-title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.qs-item-covers {
+  margin-top: 2px;
+  color: var(--qs-muted);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+/* ------------------------------------------------------------------ payment and totals */
+.qs-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--qs-gap);
+  margin-top: var(--qs-gap);
+}
+
+.qs-next {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 0;
+  list-style: none;
+}
+
+.qs-next li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 10px;
+  align-items: baseline;
+}
+
+.qs-next li + li {
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.qs-next-n {
+  color: var(--accent-text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.qs-next strong {
+  display: block;
+  font-size: 12.5px;
+}
+
+.qs-next-detail {
+  display: block;
+  margin-top: 2px;
+  color: var(--qs-muted);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.qs-sum-rows > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.qs-sums {
+  display: flex;
+  flex-direction: column;
+  gap: var(--qs-gap);
+}
+
+.qs-sum-rows > div {
+  padding: 4px 0;
+}
+
+.qs-sum-rows dt {
+  font-size: 12px;
+}
+
+.qs-sum-rows dd {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.qs-sum-note {
+  display: block;
+  margin-top: 2px;
+  color: var(--qs-faint);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.qs-pill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-top: 10px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--qs-muted);
+  font-size: 10.5px;
+}
+
+.qs-pill strong {
+  color: var(--paper);
+}
+
+.qs-pill-mark {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: 1px;
+}
+
+.qs-grand {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: var(--qs-radius);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.qs-grand-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.qs-grand-note {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  opacity: 0.72;
+  text-transform: uppercase;
+}
+
+.qs-grand-amount {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 0.95;
+  white-space: nowrap;
+}
+
+.qs-grand-unit {
+  font-size: 0.42em;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.qs-grand-pill {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 9px;
+  border: 1px solid color-mix(in srgb, var(--on-accent) 38%, transparent);
+  border-radius: 999px;
+  font-size: 10px;
+}
+
+/* Approved and sent read as settled: the pill fills. */
+.qs-grand-pill[data-status="approved"],
+.qs-grand-pill[data-status="sent"] {
+  border-color: var(--on-accent);
+  background: var(--on-accent);
+  color: var(--accent);
+}
+
+.qs-status[data-status="draft"] {
+  color: var(--qs-muted);
+}
+
+/* ------------------------------------------------------------------ terms and signature */
+.qs-close {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: var(--qs-gap);
+  margin-top: var(--qs-gap);
+}
+
+.qs-thanks {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.qs-terms-label {
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+
+.qs-terms {
+  display: grid;
+  gap: 3px;
+  padding: 0;
+  list-style: none;
+}
+
+.qs-terms li {
+  position: relative;
+  padding-left: 12px;
+  color: var(--qs-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.qs-terms li::before {
+  content: "";
+  position: absolute;
+  top: 0.6em;
+  left: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.qs-sign {
+  /* The signature is sized against this card's width, so a long name gets smaller instead of cut off. */
+  container: qs-sign / inline-size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: center;
+}
+
+/* The label keeps to the top of the card; the signature and the name sit on the line at its foot. */
+.qs .qs-sign-label {
+  align-self: flex-start;
+  margin-bottom: auto;
+}
+
+/* A script hand reaches well past its letters: tall loops above, tails below and swashes at both
+   ends. Nothing here clips it. The line is tall enough for the loops, there is room at the sides
+   for the swashes, and the size comes from the name's length (--sig-chars, set by the sheet): a
+   letter of this hand is about a third of its size wide, so 2.6 card-widths shared out over the
+   letters fills about four fifths of the line. Short names stay at full size; only the longest
+   (over about forty letters) reach the floor and wrap onto a second line. */
+.qs-signature {
+  max-width: 100%;
+  padding: 0.12em 0.35em 0.04em;
+  font-size: clamp(14px, calc(100cqi * 2.6 / var(--sig-chars, 10)), 38px);
+  line-height: 1.45;
+  text-wrap: balance;
+}
+
+/* The approval is written out from left to right, as a pen would. The mask starts outside the
+   box on every side but the one it opens from, so it never trims a loop or a tail. */
+html.motion .qs-signature[data-signed="true"] {
+  animation: qs-sign 1.4s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+@keyframes qs-sign {
+  from {
+    clip-path: inset(-60% 100% -60% -1em);
+  }
+  to {
+    clip-path: inset(-60% -1em -60% -1em);
+  }
+}
+
+.qs-sign-name {
+  align-self: stretch;
+  margin-top: 2px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line-strong);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.qs-sign-role {
+  margin-top: 2px;
+  color: var(--qs-faint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.qs-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--qs-faint);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------------------------ narrow sheets
+   Below the width of a page the cards stack, and each line of the table becomes a slip:
+   its number and where it came from on one rule, the work across the full width beneath. */
+@container qs (width < 40rem) {
+  .qs-band-top,
+  .qs-cards,
+  .qs-split,
+  .qs-close {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .qs-title-card {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .qs-title {
+    font-size: 48px;
+  }
+
+  .qs-contact {
+    border-radius: var(--qs-radius);
+  }
+
+  .qs-issued {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+
+  .qs-wordmark {
+    font-size: 14px;
+    white-space: normal;
+  }
+
+  .qs-table,
+  .qs-table thead,
+  .qs-table tbody {
+    display: block;
+  }
+
+  .qs-table thead tr {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .qs-table th {
+    display: block;
+    width: auto !important;
+  }
+
+  /* Only "#" and "Part of" keep a heading here. The others, and each part's tick, stay for screen
+     readers, out of sight. */
+  .qs-table th:nth-child(2),
+  .qs-table th:nth-child(4),
+  .qs-table td:nth-child(4) {
+    position: absolute;
+    width: 1px !important;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .qs-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    padding: 10px 12px 12px;
+  }
+
+  .qs-table td {
+    display: block;
+    width: auto !important;
+    padding: 0 !important;
+  }
+
+  .qs-table td:nth-child(1) {
+    grid-area: 1 / 1;
+  }
+
+  .qs-table td:nth-child(3) {
+    grid-area: 1 / 2;
+  }
+
+  .qs-table td:nth-child(2) {
+    grid-area: 2 / 1 / 3 / 3;
+    margin-top: 5px;
+  }
+
+  .qs-grand-amount {
+    font-size: 38px;
+  }
+}
+
+@container qs (width < 22rem) {
+  .qs-grand {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .qs-grand .text-right {
+    text-align: left;
+  }
+}
+
+@media (max-width: 639px) {
+  .qs {
+    padding: 16px;
+    border-radius: 12px;
+  }
+}

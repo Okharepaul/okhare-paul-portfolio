@@ -2,27 +2,30 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { hire } from "@/content/site";
 import { DotField } from "@/components/art/DotField";
-import { QuoteWizard } from "@/components/start/QuoteWizard";
+import { BuildWizard } from "@/components/start/BuildWizard";
 import { Arrow } from "@/components/ui/primitives";
 import type { DotBlob } from "@/lib/dots";
 import "../start.css";
+import "../quote-sheet.css";
+import "../quote-sheet-print.css";
 
 export const metadata: Metadata = {
   title: hire.label,
   description:
-    "Answer a few questions about your website, store, application or AI system and get an itemised estimate in pounds, with every line explained.",
+    "Already know what you want built? Put your website, store, mobile app, web application, AI system or brand together part by part, approve it, and send it to me as a brief.",
 };
 
-/** Gathered in the open middle of the top, clear of the labels at either end and of the receipt's figures. Left out on a phone, where there is no open middle. */
+/** Gathered in the open middle of the top, clear of the labels at either end and of the stack beside the questions. Left out on a phone, where there is no open middle. */
 const PAGE_DOTS: readonly DotBlob[] = [
   { x: 0.52, y: 0.05, radius: 0.1, strength: 0.8 },
   { x: 0.34, y: 0.0, radius: 0.05, strength: 0.55 },
 ];
 
 /**
- * Start a project: a guided estimate. The visitor says what they want built
- * and answers the questions that kind of project needs; the page prices it
- * line by line as they go and ends on a quote they can save or send.
+ * Start a project: "Build your stack", for visitors who already know what
+ * they want. They say what they want built and answer the questions that kind
+ * of project needs; the page lists every part as they go and ends on their
+ * build, which they approve and send to me. No prices are shown.
  */
 export default function StartAProjectPage() {
   return (
@@ -33,9 +36,9 @@ export default function StartAProjectPage() {
           <Arrow direction="left" className="size-3! transition-transform group-hover:-translate-x-0.5" />
           Back to home
         </Link>
-        <p className="label">GBP · No sign-up</p>
+        <p className="label">No prices · No sign-up</p>
       </div>
-      <QuoteWizard />
+      <BuildWizard />
     </div>
   );
 }

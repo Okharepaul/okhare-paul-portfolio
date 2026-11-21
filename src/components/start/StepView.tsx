@@ -3,7 +3,7 @@
 import type { Ref } from "react";
 import type { Step } from "@/content/quote";
 import { pad2 } from "@/content/projects";
-import { getType, priceHint, selectedIds, startingFrom, formatPounds, TYPE_GROUP_ID, type Answers } from "@/lib/quote";
+import { selectedIds, type Answers } from "@/lib/quote";
 import { OptionTile } from "./OptionTile";
 
 type StepViewProps = {
@@ -20,12 +20,13 @@ type StepViewProps = {
 /** Tiles per row: fewer, larger tiles for a short list of answers. */
 function columnsFor(count: number): string {
   if (count <= 2) return "sm:grid-cols-2";
-  if (count === 4) return "sm:grid-cols-2 xl:grid-cols-4";
+  // Seven or eight read as two full rows of four rather than leaving one tile alone.
+  if (count === 4 || count === 7 || count === 8) return "sm:grid-cols-2 xl:grid-cols-4";
   return "sm:grid-cols-2 xl:grid-cols-3";
 }
 
 /**
- * One question of the estimator: its number, the question set very large, a
+ * One question of "Build your stack": its number, the question set very large, a
  * line of help, and the answers as tiles. Every piece carries `data-step-item`
  * so the wizard can send the pieces off and bring the next ones in.
  */
@@ -56,26 +57,20 @@ export function StepView({ step, index, total, answers, headingRef, onChoose }: 
               <span>{group.hint ?? (group.kind === "single" ? "Choose one." : null)}</span>
             </legend>
             <div className={`grid gap-3 ${columnsFor(group.options.length)}`}>
-              {group.options.map((option, optionIndex) => {
-                // The first question shows where each kind of project starts; later ones show what a choice adds.
-                const type = group.id === TYPE_GROUP_ID ? getType(option.id as Answers["type"]) : null;
-                const hint = type ? `From ${formatPounds(startingFrom(type))}` : priceHint(option, getType(answers.type));
-                return (
-                  // The wrapper is what flies in and out; the tile inside keeps its own lean towards the pointer.
-                  <div key={option.id} data-step-item data-step-tile>
-                    <OptionTile
-                      name={`${step.id}-${group.id}`}
-                      kind={group.kind}
-                      index={optionIndex}
-                      label={option.label}
-                      detail={option.detail}
-                      hint={hint}
-                      isSelected={chosen.includes(option.id)}
-                      onChoose={() => onChoose(group.id, option.id)}
-                    />
-                  </div>
-                );
-              })}
+              {group.options.map((option, optionIndex) => (
+                // The wrapper is what flies in and out; the tile inside keeps its own lean towards the pointer.
+                <div key={option.id} data-step-item data-step-tile>
+                  <OptionTile
+                    name={`${step.id}-${group.id}`}
+                    kind={group.kind}
+                    index={optionIndex}
+                    label={option.label}
+                    detail={option.detail}
+                    isSelected={chosen.includes(option.id)}
+                    onChoose={() => onChoose(group.id, option.id)}
+                  />
+                </div>
+              ))}
             </div>
           </fieldset>
         );

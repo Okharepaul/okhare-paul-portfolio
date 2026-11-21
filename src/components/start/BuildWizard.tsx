@@ -6,12 +6,14 @@ import { CustomEase } from "gsap/CustomEase";
 import { pad2 } from "@/content/projects";
 import { Arrow } from "@/components/ui/primitives";
 import { prefersReducedMotion } from "@/lib/motion";
-import { EMPTY_ANSWERS, buildQuote, choose, isStepComplete, quoteNumber, stepsFor, type Answers, type QuoteClient } from "@/lib/quote";
+import { buildNumber, buildStack, codeFromHash, decodeBuild, encodeBuild, type BuildClient } from "@/lib/build";
+import { EMPTY_ANSWERS, choose, isStepComplete, selectedIds, stepsFor, type Answers } from "@/lib/quote";
 import { onSiteReady } from "@/lib/ready";
 import { BuildSequence } from "./BuildSequence";
-import { CountedTotal, LiveEstimate } from "./LiveEstimate";
-import { QuoteActions } from "./QuoteActions";
-import { QuoteSheet } from "./QuoteSheet";
+import { BuildActions, OpenedFromLink, type BuildDraft } from "./BuildActions";
+import { BuildSheet, type BuildStatus } from "./BuildSheet";
+import { CountUp } from "./CountUp";
+import { LiveBuild } from "./LiveBuild";
 import { StepView } from "./StepView";
 
 gsap.registerPlugin(CustomEase);
@@ -20,8 +22,8 @@ gsap.registerPlugin(CustomEase);
 const ARRIVE_EASE = CustomEase.create("start-arrive", "0.22, 1, 0.36, 1");
 const VIEW_DISTANCE_PX = 1000;
 
-/** "steps": answering. "building": the beat before the estimate. "quote": the finished estimate. */
-type Phase = "steps" | "building" | "quote";
+/** "steps": answering. "building": the beat before the build. "build": the finished build. */
+type Phase = "steps" | "building" | "build";
 
 const everyItem = (stage: HTMLElement): HTMLElement[] => Array.from(stage.querySelectorAll<HTMLElement>("[data-step-item]"));
 
@@ -89,21 +91,29 @@ function leave(stage: HTMLElement, direction: number): Promise<void> {
 }
 
 /**
- * The estimator. It asks what is being built, then the questions that kind
- * of project needs, one screen at a time; a receipt beside the questions
- * gains a line with every answer. The last answer produces the estimate as a
- * document that can be saved, sent or changed.
+ * "Build your stack", for visitors who already know what they want. It asks
+ * what is being built, then the questions that kind of project needs, one
+ * screen at a time; the stack beside the questions gains a part with every
+ * answer. The last answer lays the build out as a document. The visitor
+ * approves it, which signs it, and sends it to the owner. No prices: the
+ * figure is agreed after a call. A link with "#build=..." opens a sent build
+ * as it was, which is how the owner opens one from his email.
  */
-export function QuoteWizard() {
+export function BuildWizard() {
   const [answers, setAnswers] = useState<Answers>(EMPTY_ANSWERS);
   const [stepIndex, setStepIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>("steps");
-  const [client, setClient] = useState<QuoteClient>({ name: "", business: "" });
+  const [client, setClient] = useState<BuildClient>({ name: "", business: "" });
   const [issue, setIssue] = useState<{ reference: string; issued: Date } | null>(null);
+  const [approvedOn, setApprovedOn] = useState<Date | null>(null);
+  const [sentOn, setSentOn] = useState<Date | null>(null);
+  const [isFromLink, setIsFromLink] = useState(false);
+  /** What the visitor typed beside the build, kept here so going back to change an answer does not lose it. */
+  const [draft, setDraft] = useState<BuildDraft>({ email: "", note: "" });
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLFormElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const quoteTitleRef = useRef<HTMLHeadingElement>(null);
+  const buildTitleRef = useRef<HTMLHeadingElement>(null);
   const isMoving = useRef(false);
   const direction = useRef(1);
   const hasMoved = useRef(false);
@@ -112,10 +122,48 @@ export function QuoteWizard() {
   /** Before a kind of project is chosen, the bar shows the usual run of questions as a preview. */
   const shownSteps = answers.type ? steps : stepsFor("website");
   const step = steps[Math.min(stepIndex, steps.length - 1)];
-  const quote = useMemo(() => buildQuote(answers), [answers]);
+  const build = useMemo(() => buildStack(answers), [answers]);
+  const code = useMemo(() => (issue && answers.type ? encodeBuild({ answers, ...issue }) : ""), [answers, issue]);
+  /** An approval is a signature, so it holds only while there is a name to sign with. */
+  const status: BuildStatus = isFromLink
+    ? { kind: "sent", on: issue?.issued ?? new Date() }
+    : sentOn
+      ? { kind: "sent", on: sentOn }
+      : approvedOn && client.name.trim().length >= 2
+        ? { kind: "approved", on: approvedOn }
+        : { kind: "draft" };
   const canContinue = isStepComplete(step, answers);
+  /** When a step asks more than one must-answer question, the hint names the one still waiting. */
+  const unanswered = step.groups.filter((group) => group.kind === "single").length > 1
+    ? step.groups.find((group) => group.kind === "single" && selectedIds(answers, group.id).length !== 1)
+    : undefined;
   const isLastStep = answers.type !== null && stepIndex === steps.length - 1;
   const progress = phase === "steps" ? stepIndex / shownSteps.length : 1;
+
+  // A sent build's link ("#build=...") opens it as it was, ready to save as a PDF: on arrival, and if
+  // another link is pasted into the address bar. Read in the browser, since the server never sees the
+  // part of the address after "#".
+  useEffect(() => {
+    const openFromLink = (): void => {
+      const linkCode = codeFromHash(window.location.hash);
+      const record = linkCode ? decodeBuild(linkCode) : null;
+      if (!record) return;
+      setAnswers(record.answers);
+      setIssue({ reference: record.reference, issued: record.issued });
+      // The link carries no name: who sent it is in the email it came in.
+      setClient({ name: "", business: "" });
+      setApprovedOn(null);
+      setSentOn(null);
+      setIsFromLink(true);
+      setPhase("build");
+    };
+    const frame = window.requestAnimationFrame(openFromLink);
+    window.addEventListener("hashchange", openFromLink);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("hashchange", openFromLink);
+    };
+  }, []);
 
   // Each new question arrives in 3D. Changing an answer on the same question does not replay it.
   useLayoutEffect(() => {
@@ -125,13 +173,13 @@ export function QuoteWizard() {
   }, [stepIndex, phase]);
 
   // After a move, bring what is new into view and start a screen reader at its heading:
-  // the question's, or the estimate's once it has been built.
+  // the question's, or the build's once it has been laid out.
   useEffect(() => {
     if (!hasMoved.current) return;
     const root = rootRef.current;
     if (root && root.getBoundingClientRect().top < 0) root.scrollIntoView({ block: "start", behavior: prefersReducedMotion() ? "auto" : "smooth" });
     if (phase === "steps") headingRef.current?.focus({ preventScroll: true });
-    if (phase === "quote") quoteTitleRef.current?.focus({ preventScroll: true });
+    if (phase === "build") buildTitleRef.current?.focus({ preventScroll: true });
   }, [stepIndex, phase]);
 
   /** Sends the current question off, then shows what comes next. */
@@ -168,26 +216,50 @@ export function QuoteWizard() {
 
   const handleBuilt = useCallback((): void => {
     const issued = new Date();
-    setIssue({ reference: quoteNumber(issued, Math.floor(Math.random() * 10000)), issued });
-    setPhase("quote");
+    setIssue({ reference: buildNumber(issued, Math.floor(Math.random() * 10000)), issued });
+    setPhase("build");
   }, []);
+
+  /** Out of a build opened from a link, and its code out of the address. */
+  const leaveLink = (): void => {
+    if (!isFromLink) return;
+    window.history.replaceState(null, "", window.location.pathname);
+    setIsFromLink(false);
+  };
+
+  /** A signature is for a name: a new name, or a new business under it, has to be approved again. */
+  const handleClientChange = (next: BuildClient): void => {
+    if (next.name !== client.name || next.business !== client.business) setApprovedOn(null);
+    setClient(next);
+  };
+
+  /** A changed build is a new one to check: the approval, and any sending, start again. */
+  const clearApproval = (): void => {
+    setApprovedOn(null);
+    setSentOn(null);
+  };
 
   const handleRestart = (): void => {
     hasMoved.current = true;
     direction.current = -1;
+    leaveLink();
     setAnswers(EMPTY_ANSWERS);
     setStepIndex(0);
     setIssue(null);
+    clearApproval();
     setPhase("steps");
   };
 
   const handleEdit = (): void => {
     hasMoved.current = true;
     direction.current = -1;
+    // Changing a build that came from a link makes it the visitor's own: no longer "sent", and theirs to approve.
+    leaveLink();
+    clearApproval();
     setPhase("steps");
   };
 
-  /** Back to an earlier question from the bar: from the questions, or from the finished estimate. */
+  /** Back to an earlier question from the bar: from the questions, or from the finished build. */
   const handleJump = (index: number): void => {
     if (phase === "steps") {
       move(() => setStepIndex(index), -1);
@@ -202,9 +274,9 @@ export function QuoteWizard() {
       <div className="start-chrome">
         <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
           <h1 className="label text-paper">
-            <span className="text-accent-text">[</span> Start a project <span className="text-accent-text">]</span>
+            <span className="text-accent-text">[</span> Build your stack <span className="text-accent-text">]</span>
           </h1>
-          <p className="label max-sm:hidden">An estimate in pounds, built from your answers</p>
+          <p className="label max-sm:hidden">For when you know what you want · Approve it, send it to me</p>
         </div>
 
         <nav aria-label="Questions" className="mt-4 sm:mt-6">
@@ -228,9 +300,11 @@ export function QuoteWizard() {
                 </li>
               );
             })}
-            <li className={`label flex items-center gap-2 py-1 ${phase === "quote" ? "text-paper" : "text-paper/35"}`}>
-              <span className={phase === "quote" ? "text-accent-text" : ""}>£</span>
-              Estimate
+            <li className={`label flex items-center gap-2 py-1 ${phase === "build" ? "text-paper" : "text-paper/35"}`}>
+              <span aria-hidden="true" className={phase === "build" ? "text-accent-text" : ""}>
+                ✓
+              </span>
+              Your build
             </li>
           </ol>
           <div className="start-track mt-3">
@@ -239,11 +313,29 @@ export function QuoteWizard() {
         </nav>
       </div>
 
-      {phase === "quote" && quote && issue ? (
-        <div className="mt-7 grid gap-10 sm:mt-10 lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1fr)_21rem]">
-          <QuoteSheet quote={quote} reference={issue.reference} issued={issue.issued} client={client} titleRef={quoteTitleRef} />
-          <div className="self-start lg:sticky lg:top-24">
-            <QuoteActions quote={quote} reference={issue.reference} client={client} onClientChange={setClient} onEdit={handleEdit} onRestart={handleRestart} />
+      {phase === "build" && build && issue ? (
+        // The sheet is drawn at the size of an A4 page, so it sits beside the actions only where a page's width fits.
+        <div className="mt-7 grid gap-10 sm:mt-10 xl:grid-cols-[minmax(0,54rem)_21rem] xl:justify-center">
+          <BuildSheet build={build} reference={issue.reference} issued={issue.issued} client={client} status={status} titleRef={buildTitleRef} />
+          <div className="self-start xl:sticky xl:top-24">
+            {isFromLink ? (
+              <OpenedFromLink onRestart={handleRestart} />
+            ) : (
+              <BuildActions
+                build={build}
+                code={code}
+                reference={issue.reference}
+                client={client}
+                onClientChange={handleClientChange}
+                draft={draft}
+                onDraftChange={setDraft}
+                status={status}
+                onApprove={(isApproved) => setApprovedOn(isApproved ? new Date() : null)}
+                onSent={() => setSentOn(new Date())}
+                onEdit={handleEdit}
+                onRestart={handleRestart}
+              />
+            )}
           </div>
         </div>
       ) : (
@@ -263,18 +355,20 @@ export function QuoteWizard() {
                     </button>
                   ) : null}
                   <button type="submit" disabled={!canContinue} data-magnetic className="btn-accent disabled:cursor-not-allowed disabled:opacity-40 max-sm:flex-1 max-sm:justify-between">
-                    {isLastStep ? "Build my estimate" : "Continue"}
+                    {isLastStep ? "See my build" : "Continue"}
                     <Arrow />
                   </button>
                   <p className="label max-sm:hidden">
-                    {canContinue ? "Or press Enter" : "Choose one to continue"}
+                    {canContinue ? "Or press Enter" : unanswered ? `Choose ${unanswered.legend.toLowerCase()} to continue` : "Choose one to continue"}
                   </p>
-                  {/* On small screens the receipt is below the questions, so the running figure rides here:
+                  {/* On small screens the stack is below the questions, so its count rides here:
                       beside the buttons on a tablet, on its own line above them on a phone. */}
-                  {quote ? (
+                  {build ? (
                     <p aria-hidden="true" className="flex items-baseline gap-3 max-sm:order-first max-sm:w-full max-sm:justify-between sm:ml-auto lg:hidden">
-                      <span className="label">So far</span>
-                      <CountedTotal amount={quote.total} className="heading text-2xl text-accent" />
+                      <span className="label">In your stack</span>
+                      <span className="heading text-2xl text-accent">
+                        <CountUp value={build.parts.length} announce="" /> parts
+                      </span>
                     </p>
                   ) : null}
                 </div>
@@ -282,7 +376,7 @@ export function QuoteWizard() {
             )}
           </form>
           <div className="self-start lg:sticky lg:top-24">
-            <LiveEstimate quote={quote} />
+            <LiveBuild build={build} />
           </div>
         </div>
       )}

@@ -1,0 +1,432 @@
+import { ADDS_A_LINE, BRAND_GROUP, LAUNCH_SUPPORT, PICK_ANY, addOn, designExtras, type ProjectType } from "./shared";
+
+/**
+ * An app for iPhone and Android. All DRAFT. Priced well above a web
+ * application of the same size: two platforms to design for and test on,
+ * native device features, store review, and a separate web back office.
+ */
+export const mobile: ProjectType = {
+  id: "mobile",
+  code: "MOB",
+  label: "Mobile app",
+  detail: "An iPhone and Android app, from first sketch to the stores.",
+  base: [
+    {
+      id: "discovery",
+      title: "Discovery & product scope",
+      covers: "A workshop on goals and users, then user roles, journeys, a feature list ranked for the first release, and a written scope.",
+      why: "An app is costly to change once it is in the stores. This fixes what goes in the first release before any design starts.",
+      price: 300,
+    },
+    {
+      id: "design",
+      title: "App UX & UI design",
+      covers: "User flows, wireframes and finished designs for every screen, to Apple's and Google's guidelines, with the app icon and launch screen.",
+      why: "You see and approve every screen, on a phone, before it is built.",
+      price: 900,
+      scales: true,
+    },
+    {
+      id: "app",
+      title: "App development, iOS & Android",
+      covers: "One React Native codebase built for iPhone and Android: navigation, gestures, forms, loading and error states, large text and screen readers.",
+      why: "This is the app itself, built once and shipped to both stores.",
+      price: 2200,
+      scales: true,
+    },
+    {
+      id: "backend",
+      title: "Backend, API & database",
+      covers: "The data model, a secure API for the app, authentication rules and storage, built to keep working as users grow.",
+      why: "It is what stores your users' data and keeps one user's data from another's.",
+      price: 1200,
+      scales: true,
+    },
+    {
+      id: "testing",
+      title: "Device testing & beta",
+      covers: "Testing on real iPhones and Android phones of different sizes and system versions, with beta builds through TestFlight and Google Play for you to try.",
+      why: "An app that crashes on one popular phone collects one-star reviews in a day.",
+      price: 450,
+    },
+    {
+      id: "release",
+      title: "App Store & Google Play release",
+      covers: "Store accounts set up in your name, privacy details and review rules met, builds signed and submitted, and any review feedback answered until approved.",
+      why: "Apple and Google review every app. Getting through review is part of the build.",
+      price: 400,
+    },
+  ],
+  steps: [
+    {
+      id: "scope",
+      label: "Scope",
+      title: "How big is the app?",
+      lead: "Count the distinct screens: a list, a form and a detail view are three. Sign-in and settings count too.",
+      groups: [
+        {
+          id: "size",
+          kind: "single",
+          legend: "Screens",
+          options: [
+            { id: "size-small", label: "Up to 8 screens", detail: "A focused first version.", factor: 0.7 },
+            { id: "size-medium", label: "9 to 20 screens", detail: "A full app.", factor: 1 },
+            { id: "size-large", label: "21 to 40 screens", detail: "A product with several sides.", factor: 1.5 },
+            { id: "size-xl", label: "More than 40", detail: "Several apps in one.", factor: 2.1 },
+          ],
+        },
+        {
+          id: "mob-start",
+          kind: "single",
+          legend: "Starting point",
+          options: [
+            { id: "mob-new", label: "A new app", detail: "Nothing in the stores yet." },
+            addOn("mob-rebuild", "Rebuilding an existing app", "Users and data carried over.", {
+              title: "Rebuild & data move",
+              covers: "Existing users and data carried across, and the new app shipped as an update to your current store listing, so nobody has to reinstall.",
+              why: "You are replacing an app people already use. Keeping their accounts, data and reviews is its own piece of work.",
+              price: 500,
+            }),
+          ],
+        },
+        {
+          id: "mob-platforms",
+          kind: "multi",
+          legend: "Also on",
+          hint: "Phones are included. Choose any, or none.",
+          options: [
+            addOn("mob-tablet", "Tablets", "Layouts made for iPad and Android tablets.", {
+              title: "Tablet layouts",
+              covers: "Layouts designed and built for iPad and Android tablets, in both orientations, not phone screens stretched.",
+              why: "You asked for the app on tablets, which Apple reviews as its own experience.",
+              price: 400,
+            }),
+            addOn("mob-web", "The web", "The same app in a browser.", {
+              title: "Web version",
+              covers: "The same app running in a browser from the shared code, with layouts for laptop and desktop screens.",
+              why: "You asked for people to use it without installing anything.",
+              price: 900,
+            }),
+          ],
+        },
+      ],
+    },
+    {
+      id: "features",
+      label: "Features",
+      title: "What should the app do?",
+      lead: ADDS_A_LINE,
+      groups: [
+        {
+          id: "mob-people",
+          kind: "multi",
+          legend: "Accounts",
+          hint: PICK_ANY,
+          options: [
+            addOn(
+              "mob-auth",
+              "Sign-up & login",
+              "Email or phone, with codes and reset.",
+              {
+                title: "Sign-up & login",
+                covers: "Sign-up by email or phone with verification codes, password reset, and in-app account deletion as Apple and Google require.",
+                why: "You asked for people to have accounts.",
+                price: 300,
+              },
+              ["messaging"],
+            ),
+            addOn("mob-sso", "Sign in with Apple & Google", "One tap, no new password.", {
+              title: "Sign in with Apple & Google",
+              covers: "One-tap sign-in with Apple and Google, linked to the same account if someone uses both.",
+              why: "You asked for faster sign-up. Apple expects a private sign-in option like its own whenever others are offered.",
+              price: 150,
+            }),
+            addOn("mob-biometric", "Face ID & fingerprint", "Unlock without typing.", {
+              title: "Face ID & fingerprint",
+              covers: "Unlock with Face ID, Touch ID or an Android fingerprint, with the session held securely on the phone.",
+              why: "You asked for quick, secure access every time the app opens.",
+              price: 100,
+            }),
+            addOn("mob-profiles", "Profiles & settings", "Photos, preferences and privacy controls.", {
+              title: "Profiles & settings",
+              covers: "Profiles with a photo and details, preferences, notification choices and privacy controls.",
+              why: "You asked for people to make the app their own.",
+              price: 150,
+            }),
+            addOn("mob-roles", "Roles & permissions", "Different users see different things.", {
+              title: "Roles & permissions",
+              covers: "Different kinds of user, such as customers and staff, each seeing and doing only what they should.",
+              why: "You asked for some people to have more access than others.",
+              price: 250,
+            }),
+            addOn("mob-onboarding", "Onboarding", "A first-run tour and well-timed permissions.", {
+              title: "Onboarding",
+              covers: "A short first-run tour, and permission requests asked at the moment they make sense, so fewer people say no.",
+              why: "You asked for new users to understand the app in their first minute.",
+              price: 150,
+            }),
+          ],
+        },
+        {
+          id: "mob-core",
+          kind: "multi",
+          legend: "In the app",
+          hint: PICK_ANY,
+          options: [
+            addOn(
+              "mob-push",
+              "Push notifications",
+              "Alerts that open the right screen.",
+              {
+                title: "Push notifications",
+                covers: "Push notifications on both platforms, sent by events or on a schedule, each opening the right screen.",
+                why: "You asked for the app to bring people back when something needs them.",
+                price: 250,
+              },
+              ["messaging"],
+            ),
+            addOn("mob-search", "Search & filters", "Find anything, sort and filter.", {
+              title: "Search & filters",
+              covers: "Search with suggestions and recent searches, plus filters and sorting on every list.",
+              why: "You asked for people to find things quickly in a lot of content.",
+              price: 200,
+            }),
+            addOn("mob-media", "Camera, photos & files", "Take or pick, then upload safely.", {
+              title: "Camera, photos & files",
+              covers: "Take or choose photos, video and documents, crop and compress them, and upload them safely, even on a weak signal.",
+              why: "You asked for people to add their own pictures or files.",
+              price: 250,
+            }),
+            addOn(
+              "mob-maps",
+              "Maps & location",
+              "Nearby results, directions, live position.",
+              {
+                title: "Maps & location",
+                covers: "Maps, place search, nearby results and directions, with location asked for only when it is needed.",
+                why: "You asked for the app to know where things, or people, are.",
+                price: 350,
+              },
+              ["apis"],
+            ),
+            addOn(
+              "mob-booking",
+              "Bookings & calendar",
+              "Pick a slot, get reminders.",
+              {
+                title: "Bookings & calendar",
+                covers: "Choose a slot, get reminders, and add it to the phone's own calendar. Deposits are taken with card payments.",
+                why: "You asked for people to book from the app.",
+                price: 350,
+              },
+              ["tools"],
+            ),
+            addOn("mob-chat", "In-app chat", "One-to-one or group, with images.", {
+              title: "In-app chat",
+              covers: "One-to-one or group chat with typing and read indicators, images, and reporting and blocking. Alerts reach a locked phone with push notifications.",
+              why: "You asked for people to talk inside the app. Moderation tools are required by the stores.",
+              price: 600,
+            }),
+            addOn("mob-live", "Live updates", "Changes appear on every phone at once.", {
+              title: "Live updates",
+              covers: "Changes that appear on everyone's phone straight away, such as orders, tracking or scores.",
+              why: "You asked for it to work in real time.",
+              price: 350,
+            }),
+            addOn("mob-offline", "Works offline", "Usable on the Tube; syncs when back.", {
+              title: "Offline mode & sync",
+              covers: "Content kept on the phone and changes queued while offline, then synced when the connection returns, with conflicts handled.",
+              why: "You asked for the app to work without signal. That changes how every screen stores its data.",
+              price: 450,
+            }),
+            addOn("mob-scan", "QR & barcode scanning", "Scan tickets, products or codes.", {
+              title: "QR & barcode scanning",
+              covers: "Fast scanning of QR codes and barcodes with the camera, with a fallback to type the code in.",
+              why: "You asked for the phone to read codes, such as tickets or products.",
+              price: 150,
+            }),
+            addOn("mob-device", "Bluetooth & wearables", "Devices, watches and health data.", {
+              title: "Bluetooth & wearables",
+              covers: "Connection to one Bluetooth device, smartwatch or Apple Health and Health Connect, with permissions handled.",
+              why: "You asked for the app to talk to hardware. Each device brings its own testing.",
+              price: 500,
+            }),
+            addOn(
+              "mob-ai",
+              "AI features",
+              "An assistant, smart search or image recognition.",
+              {
+                title: "AI features",
+                covers: "An assistant, smart search or image recognition inside the app, running on your data, with limits on what it may do.",
+                why: "You asked for AI in the app, wired to real data.",
+                price: 500,
+              },
+              ["ai"],
+            ),
+          ],
+        },
+        {
+          id: "mob-business",
+          kind: "multi",
+          legend: "Business",
+          hint: PICK_ANY,
+          options: [
+            addOn(
+              "mob-payments",
+              "Card payments",
+              "Apple Pay, Google Pay and cards.",
+              {
+                title: "Card payments",
+                covers: "Stripe checkout with Apple Pay, Google Pay and cards, for physical goods and services, with receipts.",
+                why: "You asked to take money in the app. Card details never touch your own server.",
+                price: 350,
+              },
+              ["payments"],
+            ),
+            addOn(
+              "mob-iap",
+              "Subscriptions & unlocks",
+              "Sold through the App Store and Google Play.",
+              {
+                title: "In-app purchases & subscriptions",
+                covers: "Subscriptions and unlocks sold through App Store and Google Play billing, with free trials, restore purchases and upgrade paths.",
+                why: "You asked to sell digital content or features, which in most markets the stores require to go through their own billing.",
+                price: 500,
+              },
+              ["stores"],
+            ),
+            addOn("mob-admin", "Admin dashboard", "A web back office for your team.", {
+              title: "Admin dashboard",
+              covers: "A web back office to manage users, content, orders and push messages, with roles for your team.",
+              why: "You asked to run the app yourself, day to day. It is a second application, built for a browser.",
+              price: 600,
+            }),
+            addOn("mob-analytics", "Analytics & crash reports", "See use; catch crashes first.", {
+              title: "Analytics & crash reports",
+              covers: "Usage analytics on your key actions, and crash reports with the cause, so problems are seen before the reviews mention them.",
+              why: "You asked to see how the app is used and where it fails.",
+              price: 150,
+            }),
+            addOn(
+              "mob-integration",
+              "Connect another system",
+              "Your CRM, booking or stock system.",
+              {
+                title: "System integration",
+                covers: "A tested connection to one outside system, such as your CRM, booking or stock system.",
+                why: "You asked for the app to share data with a tool you already use.",
+                price: 250,
+              },
+              ["tools"],
+            ),
+            addOn("mob-languages", "More than one language", "Screens and store listings translated.", {
+              title: "Multi-language",
+              covers: "Translated screens with layouts that hold in longer languages, right-to-left where needed, and store listings in each language.",
+              why: "You asked for the app in more than one language.",
+              price: 300,
+            }),
+          ],
+        },
+      ],
+    },
+    {
+      id: "look",
+      label: "Look",
+      title: "How should it feel?",
+      lead: "The brand it wears, how it moves under the thumb, and the design work around it.",
+      groups: [
+        BRAND_GROUP,
+        {
+          id: "mob-feel",
+          kind: "single",
+          legend: "The feel",
+          options: [
+            { id: "feel-native", label: "Clean and native", detail: "Familiar on each phone, light motion." },
+            addOn("feel-motion", "Signature motion & haptics", "Custom transitions you can feel.", {
+              title: "Signature motion & haptics",
+              covers: "Custom transitions, gesture-driven animation and haptic feedback, smooth on mid-range phones, with reduced motion respected.",
+              why: "You asked for an app that feels crafted. Motion that follows a finger is engineered screen by screen.",
+              price: 600,
+            }),
+          ],
+        },
+        designExtras("mob-design", 200, "a phone"),
+      ],
+    },
+    {
+      id: "launch",
+      label: "Launch",
+      title: "What happens at launch?",
+      lead: "Pick what you want me to take care of. Leave out anything you have covered.",
+      groups: [
+        {
+          id: "mob-listing",
+          kind: "multi",
+          legend: "In the stores",
+          hint: PICK_ANY,
+          options: [
+            addOn("mob-store-assets", "Store listing & screenshots", "Designed to be found and installed.", {
+              title: "Store listing",
+              covers: "Store screenshots for every required device size, the description and keywords, written and designed for both stores.",
+              why: "The listing is the shop window. Most people decide to install from the screenshots alone.",
+              price: 250,
+            }),
+            addOn("mob-preview", "App preview video", "A short film of the app in use.", {
+              title: "App preview video",
+              covers: "A short preview film of the app in use, cut to each store's rules, for the listing and for sharing.",
+              why: "You asked to show the app moving, which converts better than stills.",
+              price: 250,
+            }),
+            addOn(
+              "mob-site",
+              "Landing page for the app",
+              "Store badges, smart links and legal pages.",
+              {
+                title: "App landing page",
+                covers: "A one-page website with store badges, a link that opens the right store on any phone, and a home for your privacy policy and terms.",
+                why: "You asked for a home for the app on the web, to send people to.",
+                price: 300,
+              },
+              ["domain", "hosting"],
+            ),
+            addOn("mob-legal", "Privacy policy & terms", "Required by both stores.", {
+              title: "Privacy policy & terms",
+              covers: "A privacy policy and terms drafted for the app from tested templates, matched to the store privacy details. A solicitor's read is still advised.",
+              why: "Both stores require a privacy policy before an app is accepted, and terms protect you when something goes wrong.",
+              price: 100,
+            }),
+          ],
+        },
+        {
+          id: "mob-care",
+          kind: "multi",
+          legend: "Support & care",
+          hint: PICK_ANY,
+          options: [
+            addOn("mob-support", "Launch support & handover", "30 days of fixes, plus a training session.", LAUNCH_SUPPORT),
+            addOn("mob-ota", "Instant updates", "Small fixes without waiting for review.", {
+              title: "Over-the-air updates",
+              covers: "Small fixes to the app's code and content shipped straight to phones without waiting for store review, with a way to roll back. Native changes still go through review.",
+              why: "You asked to fix things the same day, not after a review queue.",
+              price: 150,
+            }),
+            addOn("mob-a11y", "Accessibility audit", "VoiceOver, TalkBack and large text.", {
+              title: "Accessibility audit",
+              covers: "Every screen checked with VoiceOver, TalkBack, large text and switch control; issues fixed and written up.",
+              why: "You asked for proof it works for everyone. Accessible components are in every build; the audit is the evidence.",
+              price: 200,
+            }),
+            addOn("mob-aftercare", "3 months of aftercare", "Fixes, updates and new OS versions.", {
+              title: "3 months of aftercare",
+              covers: "Fixes, library updates and new store builds for the three months after launch, including any new iOS or Android release.",
+              why: "Apple and Google change their systems every year. An app nobody updates stops working, or gets removed.",
+              price: 450,
+            }),
+          ],
+        },
+      ],
+    },
+  ],
+  shared: ["timeline"],
+  running: ["hosting", "stores"],
+};

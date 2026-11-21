@@ -8,13 +8,8 @@ import {
   formatDate,
   formatShortDate,
   formatGBP,
-  formatPounds,
   getType,
-  priceHint,
   isStepComplete,
-  quoteAsText,
-  quoteMessage,
-  quoteNumber,
   selectedIds,
   coreAt,
   startingFrom,
@@ -69,6 +64,41 @@ describe("the price list", () => {
   test("names only running costs that have an explanation", () => {
     const known = Object.keys(runningCosts);
     projectTypes.forEach((type) => type.running.forEach((id) => expect(known).toContain(id)));
+    projectTypes.forEach((type) =>
+      stepsFor(type.id)
+        .flatMap((step) => step.groups)
+        .flatMap((group) => group.options)
+        .forEach((option) => option.running?.forEach((id) => expect(known, option.id).toContain(id))),
+    );
+  });
+
+  test("keeps every question of a project apart, by id and by the label it carries on the quote", () => {
+    projectTypes.forEach((type) => {
+      const groups = stepsFor(type.id).flatMap((step) => step.groups);
+      const steps = stepsFor(type.id).map((step) => step.id);
+      expect(new Set(groups.map((group) => group.id)).size, type.id).toBe(groups.length);
+      expect(new Set(groups.map((group) => group.legend)).size, type.id).toBe(groups.length);
+      expect(new Set(steps).size, type.id).toBe(steps.length);
+    });
+  });
+
+  test("lets only the size question scale the build, and only the pace question rush it", () => {
+    projectTypes.forEach((type) => {
+      const groups = stepsFor(type.id).flatMap((step) => step.groups);
+      const sizing = groups.filter((group) => group.options.some((option) => option.factor !== undefined));
+      const pacing = groups.filter((group) => group.options.some((option) => (option.percent ?? 0) > 0));
+      expect(sizing.map((group) => group.id), type.id).toEqual(type.id === "brand" ? [] : ["size"]);
+      expect(pacing.map((group) => group.id), type.id).toEqual(["timeline"]);
+    });
+  });
+
+  test("offers a mobile app, before the web application, priced well above it at every size", () => {
+    const ids = projectTypes.map((type) => type.id);
+    expect(ids.indexOf("mobile")).toBeLessThan(ids.indexOf("webapp"));
+    const mobile = getType("mobile")!;
+    const webapp = getType("webapp")!;
+    expect(startingFrom(mobile)).toBeGreaterThan(startingFrom(webapp) * 1.75);
+    [0.7, 1, 1.5, 2.1].forEach((factor) => expect(coreAt(mobile, factor), String(factor)).toBeGreaterThan(coreAt(webapp, factor) * 1.75));
   });
 
   test("splits payment into parts that make the whole", () => {
@@ -96,11 +126,11 @@ describe("choose", () => {
 
   test("adds to a pick-any group, and takes the option out when it is picked again", () => {
     const two = answer(store, [
-      ["features", "shop-admin"],
-      ["features", "shop-reviews"],
+      ["shop-run", "shop-admin"],
+      ["shop-run", "shop-vat"],
     ]);
-    expect(selectedIds(two, "features")).toEqual(["shop-admin", "shop-reviews"]);
-    expect(selectedIds(answer(two, [["features", "shop-admin"]]), "features")).toEqual(["shop-reviews"]);
+    expect(selectedIds(two, "shop-run")).toEqual(["shop-admin", "shop-vat"]);
+    expect(selectedIds(answer(two, [["shop-run", "shop-admin"]]), "shop-run")).toEqual(["shop-vat"]);
   });
 
   test("starts the later answers again when the kind of project changes, and never changes its input", () => {
@@ -137,10 +167,10 @@ describe("buildQuote", () => {
     // Invoice OP-2611-0473: £3,725 including a £200 line for domain and hosting, now the client's own cost.
     const answers = answer(store, [
       ["size", "size-small"],
-      ["features", "shop-admin"],
+      ["shop-run", "shop-admin"],
       ["brand", "brand-need"],
       ["finish", "finish-clean"],
-      ["launch", "launch-support"],
+      ["care", "launch-support"],
       ["timeline", "time-standard"],
     ]);
     const quote = buildQuote(answers);
@@ -197,7 +227,7 @@ describe("buildQuote", () => {
   });
 
   test("lists the running costs the project brings, without repeats", () => {
-    const quote = buildQuote(answer(choose(EMPTY_ANSWERS, typeGroup, "webapp"), [["features", "app-payments"], ["features", "app-ai"]]));
+    const quote = buildQuote(answer(choose(EMPTY_ANSWERS, typeGroup, "webapp"), [["app-business", "app-payments"], ["app-work", "app-ai"]]));
     const ids = quote?.running.map((cost) => cost.id) ?? [];
     expect(ids).toEqual(expect.arrayContaining(["domain", "hosting", "payments", "ai"]));
     expect(new Set(ids).size).toBe(ids.length);
@@ -206,7 +236,7 @@ describe("buildQuote", () => {
   test("records every question in the summary, answered or not", () => {
     const quote = buildQuote(answer(store, [["size", "size-small"]]));
     expect(quote?.summary.find((row) => row.label === "Catalogue")?.value).toBe("Up to 50 products");
-    expect(quote?.summary.find((row) => row.label === "Features")?.value).toBe("None");
+    expect(quote?.summary.find((row) => row.label === "Running it")?.value).toBe("None");
   });
 
   test("prices every kind of project from its first answer, at the figure its tile promised", () => {
@@ -238,107 +268,8 @@ describe("formatting", () => {
     expect(formatGBP(0)).toBe("£0.00");
   });
 
-  test("hints at what a choice adds, and says nothing when it adds nothing", () => {
-    const look = sharedSteps.look.groups[0].options;
-    expect(formatPounds(3525)).toBe("£3,525");
-    expect(priceHint(look[0])).toBeNull();
-    expect(priceHint(look[1])).toBe("+ £250");
-    expect(priceHint(sharedSteps.timeline.groups[0].options[2])).toBe("+ 20%");
-    expect(priceHint(sharedSteps.timeline.groups[0].options[0])).toBeNull();
-  });
-
-  test("shows what the core work comes to at each size", () => {
-    const type = getType("store");
-    const sizes = type?.steps.flatMap((step) => step.groups).find((group) => group.id === "size");
-    expect(priceHint(sizes!.options[0], type)).toBe("Core build £2,675");
-    expect(priceHint(sizes!.options[0])).toBeNull();
-  });
-
-  test("numbers an estimate by year, month and a four-digit serial", () => {
-    const november = new Date(2026, 10, 19);
-    expect(quoteNumber(november, 473)).toBe("OP-EST-2611-0473");
-    expect(quoteNumber(november, 123456)).toBe("OP-EST-2611-3456");
-    expect(quoteNumber(new Date(2027, 0, 2), -7)).toBe("OP-EST-2701-0007");
-  });
-
   test("writes dates the British way", () => {
     expect(formatDate(new Date(2026, 10, 19))).toBe("19 November 2026");
     expect(formatShortDate(new Date(2026, 11, 19))).toBe("19 Dec 2026");
-  });
-
-  test("puts the whole estimate into a short message", () => {
-    const quote = buildQuote(answer(store, [["size", "size-small"], ["timeline", "time-priority"]]));
-    const text = quoteAsText(quote!, "OP-EST-2611-0473");
-    expect(text).toContain("Estimate OP-EST-2611-0473 · E-commerce store");
-    expect(text).toContain("01 Discovery & project scope: £150.00");
-    expect(text).toContain("Priority delivery (+20%)");
-    expect(text).toContain(`Estimated total: ${formatGBP(quote!.total)}`);
-    expect(text).toContain("Not included, paid by the client direct: Domain name");
-    expect(text.length).toBeLessThan(1800);
-  });
-
-  test("leaves the charges out of the brief version, and keeps the answers and totals", () => {
-    const quote = buildQuote(answer(store, [["size", "size-small"]]));
-    const brief = quoteAsText(quote!, "OP-EST-2611-0473", true);
-    expect(brief).not.toContain("01 Discovery");
-    expect(brief).toContain("Catalogue: Up to 50 products");
-    expect(brief).toContain(`Estimated total: ${formatGBP(quote!.total)}`);
-  });
-});
-
-describe("the message that carries an estimate", () => {
-  const MAX = 2000;
-  const reference = "OP-EST-2611-0473";
-  const longNote = "n".repeat(400);
-  const client = { name: "N".repeat(80), business: "B".repeat(80) };
-
-  /** The biggest estimate a kind of project can produce: the last answer to every one-answer question, every extra. */
-  const everything = (typeId: (typeof projectTypes)[number]["id"]) =>
-    stepsFor(typeId)
-      .slice(1)
-      .flatMap((step) => step.groups)
-      .reduce(
-        (answers, group) =>
-          group.kind === "single"
-            ? choose(answers, group, group.options[group.options.length - 1].id)
-            : group.options.reduce((sofar, option) => choose(sofar, group, option.id), answers),
-        choose(EMPTY_ANSWERS, typeGroup, typeId),
-      );
-
-  test("says who it is from, then the note, then the estimate", () => {
-    const quote = buildQuote(answer(store, [["size", "size-small"]]));
-    const message = quoteMessage(quote!, reference, { max: MAX, client: { name: " Ada ", business: "Example Studio" }, note: " Hello. " });
-    expect(message.startsWith("From Ada, Example Studio\n\nHello.\n\nEstimate OP-EST-2611-0473")).toBe(true);
-    expect(quoteMessage(quote!, reference, { max: MAX }).startsWith("Estimate OP-EST-2611-0473")).toBe(true);
-  });
-
-  test("always fits, and never loses the totals, however big the project or long the note", () => {
-    projectTypes.forEach((type) => {
-      const quote = buildQuote(everything(type.id));
-      const message = quoteMessage(quote!, reference, { max: MAX, client, note: longNote });
-      expect(message.length, type.id).toBeLessThanOrEqual(MAX);
-      expect(message, type.id).toContain(`Estimated total: ${formatGBP(quote!.total)}`);
-      expect(message, type.id).toContain("Not included, paid by the client direct:");
-      expect(message, type.id).toContain(`From ${client.name}, ${client.business}`);
-    });
-  });
-
-  test("gives up the end of the note before any of the estimate", () => {
-    const quote = buildQuote(everything("store"));
-    const full = quoteAsText(quote!, reference);
-    const tight = full.length + 40;
-    const message = quoteMessage(quote!, reference, { max: tight, note: longNote });
-    expect(message.length).toBeLessThanOrEqual(tight);
-    expect(message.endsWith(full)).toBe(true);
-    expect(message).toContain("…");
-  });
-
-  test("drops the charges, not the totals, when even the estimate alone is too long", () => {
-    const quote = buildQuote(everything("store"));
-    const brief = quoteAsText(quote!, reference, true);
-    const message = quoteMessage(quote!, reference, { max: brief.length + 10, note: longNote });
-    expect(message.length).toBeLessThanOrEqual(brief.length + 10);
-    expect(message).toContain(`Estimated total: ${formatGBP(quote!.total)}`);
-    expect(message).not.toContain("01 Discovery");
   });
 });

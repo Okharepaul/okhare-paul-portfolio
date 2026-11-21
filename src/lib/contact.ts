@@ -3,7 +3,8 @@ import { contact } from "@/content/home";
 
 export const MESSAGE_MAX = 2000;
 
-const singleLine = (max: number) =>
+/** A one-line field, safe to put in an email subject or header. */
+export const singleLine = (max: number) =>
   z
     .string()
     .trim()
@@ -30,23 +31,23 @@ export type ContactInput = z.infer<typeof contactSchema>;
 
 export type FieldErrors = Partial<Record<keyof ContactInput, string>>;
 
-export interface ApiResponse<T> {
+export interface ApiResponse<T, F = FieldErrors> {
   success: boolean;
   data?: T;
   error?: string;
-  fields?: FieldErrors;
+  fields?: F;
 }
 
 /** First message per field, ready to show next to the input. */
-export function toFieldErrors(error: z.ZodError): FieldErrors {
-  return error.issues.reduce<FieldErrors>((fields, issue) => {
+export function toFieldErrors<F extends Partial<Record<string, string>> = FieldErrors>(error: z.ZodError): F {
+  return error.issues.reduce<F>((fields, issue) => {
     const key = issue.path[0];
     if (typeof key !== "string" || key in fields) return fields;
     return { ...fields, [key]: issue.message };
-  }, {});
+  }, {} as F);
 }
 
-/** Plain-text email body. No HTML, so nothing a visitor types can be rendered as markup. */
+/** The plain-text body. It travels with the designed version (contact-email.ts) for apps that show only text. */
 export function formatMessage(input: ContactInput): string {
   return [
     `Name: ${input.name}`,

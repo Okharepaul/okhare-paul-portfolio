@@ -12,8 +12,6 @@ type OptionTileProps = {
   index: number;
   label: string;
   detail: string;
-  /** What choosing it does to the estimate, e.g. "+ £250". */
-  hint?: string | null;
   isSelected: boolean;
   onChoose: () => void;
 };
@@ -27,7 +25,7 @@ const TILT_DEGREES = 5;
  * tile leans towards the pointer, and choosing it floods it with the
  * foreground colour from the point that was pressed.
  */
-export function OptionTile({ name, kind, index, label, detail, hint, isSelected, onChoose }: OptionTileProps) {
+export function OptionTile({ name, kind, index, label, detail, isSelected, onChoose }: OptionTileProps) {
   /** Where the pointer is on the tile, as 0..1 across and down. */
   const place = (event: PointerEvent<HTMLLabelElement>): { x: number; y: number } => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -74,7 +72,6 @@ export function OptionTile({ name, kind, index, label, detail, hint, isSelected,
       </span>
       <span className="tile-label">{label}</span>
       <span className="tile-detail">{detail}</span>
-      {hint ? <span className="tile-price">{hint}</span> : null}
     </label>
   );
 }

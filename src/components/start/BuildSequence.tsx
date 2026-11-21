@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { buildingLines as LINES } from "@/content/quote";
 import { prefersReducedMotion } from "@/lib/motion";
 
 type BuildSequenceProps = {
@@ -8,14 +9,11 @@ type BuildSequenceProps = {
   onDone: () => void;
 };
 
-/** What is said while the estimate is put together. Each is something the quote really does. */
-const LINES = ["Pricing the work", "Writing what each line covers", "Setting the running costs apart", "Totalling in pounds"] as const;
-
 const LINE_MS = 430;
 const HOLD_MS = 360;
 
 /**
- * The short pause between the last answer and the finished estimate: four
+ * The short pause between the last answer and the finished build: four
  * lines ticked off one after another. It is a beat of anticipation, not a
  * wait for anything, so with reduced motion it is skipped entirely.
  */
@@ -38,13 +36,13 @@ export function BuildSequence({ onDone }: BuildSequenceProps) {
     <div className="flex min-h-[26rem] flex-col justify-center py-10">
       {/* Said once to a screen reader; the counter and the ticking lines are for the eye. */}
       <p role="status" className="sr-only">
-        Building your estimate
+        Putting your build together
       </p>
       <p aria-hidden="true" className="label">
         <span className="text-accent-text">{String(Math.min(done + 1, LINES.length)).padStart(2, "0")}</span> / {String(LINES.length).padStart(2, "0")} · Working
       </p>
       <p aria-hidden="true" className="display mt-4 text-[clamp(2.7rem,6.4vw,6.5rem)]">
-        Building your estimate
+        Putting your build together
       </p>
       <ul aria-hidden="true" className="mt-9 flex flex-col gap-3.5">
         {LINES.map((line, i) => {

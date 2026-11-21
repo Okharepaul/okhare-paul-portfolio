@@ -1,0 +1,83 @@
+/* The build sheet on paper (see quote-sheet.css): an A4 page, the light scheme in exact colours,
+   rows a little closer, and no block split across a page. */
+@page {
+  size: A4;
+  margin: 9mm 10mm;
+}
+
+@media print {
+  .qs {
+    --qs-band-accent: var(--orange);
+
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Undo the entrance animation, whatever point it had reached. */
+  .qs,
+  .qs [data-quote-item],
+  .qs .qs-signature {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+
+  /* On paper the rows sit a little closer, so a build of twenty-odd parts still ends on the second page. */
+  .qs {
+    --qs-gap: 10px;
+  }
+
+  .qs .qs-table-wrap {
+    margin-top: 10px;
+  }
+
+  .qs .qs-table td {
+    padding: 4px 10px;
+  }
+
+  .qs .qs-table td.qs-col-part,
+  .qs .qs-table td.qs-col-in {
+    padding-top: 5px;
+  }
+
+  .qs .qs-table .qs-col-n,
+  .qs .qs-table .qs-col-in {
+    width: 34px;
+  }
+
+  .qs .qs-table .qs-col-part {
+    width: 96px;
+  }
+
+  .qs .qs-item-title {
+    font-size: 12px;
+    line-height: 1.25;
+  }
+
+  .qs .qs-item-covers {
+    margin-top: 1px;
+    font-size: 10.5px;
+    line-height: 1.3;
+  }
+
+  .qs .qs-terms li {
+    font-size: 10.5px;
+    line-height: 1.4;
+  }
+
+  /* A long table carries its head onto the second page. */
+  .qs-table thead {
+    display: table-header-group;
+  }
+
+  .qs-band,
+  .qs-cards,
+  .qs-table tbody tr,
+  .qs-keep,
+  .qs-close > * {
+    break-inside: avoid;
+  }
+}

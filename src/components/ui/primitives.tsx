@@ -8,7 +8,9 @@ interface ClassNameProps {
 export function Logo({ className }: ClassNameProps) {
   return (
     <svg className={className} viewBox="26 42 204 172" aria-hidden="true" focusable="false">
-      <use href="/mark.svg#m" />
+      {/* Placed over the same box as the frame's view: without x, y, width and height a <use> starts at 0,0
+          and the symbol's own view is shifted 26 and 42 units off, cutting the head and the left arm. */}
+      <use href="/mark.svg#m" x="26" y="42" width="204" height="172" />
     </svg>
   );
 }

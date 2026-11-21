@@ -47,7 +47,7 @@ export const contactHref = "/#contact";
 /**
  * The "hire me" call to action. Every button and band on the site reads from
  * here, so the wording and the destination change in one place.
- * The page at `href` is the estimator; its prices live in `content/quote`.
+ * The page at `href` is "Build your stack"; its questions live in `content/quote`.
  */
 export const hire = {
   href: "/start-a-project",

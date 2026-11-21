@@ -322,6 +322,7 @@ export const labBand = {
 export const contact = {
   heading: "Let's work together",
   copy: "Got a product to build, a brand to launch or a role to fill? Tell me what you're working on. I reply within two working days.",
-  needs: ["Web app", "AI", "Cloud", "Brand & design", "Hiring for a role", "Something else"],
+  // "Mobile app" added with the mobile option on Start a project (Nov 2026).
+  needs: ["Web app", "Mobile app", "AI", "Cloud", "Brand & design", "Hiring for a role", "Something else"],
   sent: "Message sent. I'll reply within two working days.",
 } as const;

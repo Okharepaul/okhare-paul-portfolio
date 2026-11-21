@@ -1,7 +1,9 @@
 /**
- * The arithmetic behind the "Start a project" estimator: which questions a
- * project is asked, and what its answers add up to. Pure functions over the
- * price list in `content/quote`; nothing here touches the page.
+ * The questions behind "Build your stack" on the Start a project page, and the
+ * arithmetic of the owner's price list. Which questions a project is asked and
+ * how answers are kept are shared with the build (`lib/build.ts`); the prices
+ * are never shown to the visitor. They give the owner a guide figure in the
+ * email a sent build arrives as. Pure functions; nothing here touches the page.
  */
 import {
   paymentTerms,
@@ -124,9 +126,17 @@ export interface Quote {
   upfront: number;
   completion: number;
   /** Costs outside the quote, paid by the client direct to the provider. */
-  running: { id: RunningCostId; title: string; note: string }[];
-  /** The answers, for the record: one row per question. */
-  summary: { label: string; value: string }[];
+  running: RunningCost[];
+  /** The answers, for the record: one row per question, with how many options were picked in it. */
+  summary: { label: string; value: string; picks: number }[];
+}
+
+export type RunningCost = { id: RunningCostId; title: string; note: string };
+
+/** The running costs a project brings with it, from its kind and the options picked, in the order they are listed. */
+export function runningFor(type: ProjectType, picked: readonly Option[]): RunningCost[] {
+  const wanted = new Set<RunningCostId>([...type.running, ...picked.flatMap((option) => option.running ?? [])]);
+  return (Object.keys(runningCosts) as RunningCostId[]).filter((id) => wanted.has(id)).map((id) => ({ id, ...runningCosts[id] }));
 }
 
 /** Every option the visitor has picked, across the questions their project is asked. */
@@ -177,15 +187,14 @@ export function buildQuote(answers: Answers): Quote | null {
   const upfront = upfrontPence / 100;
   const completion = (Math.round(total * 100) - upfrontPence) / 100;
 
-  const wanted = new Set<RunningCostId>([...type.running, ...picked.flatMap(({ option }) => option.running ?? [])]);
-  const running = (Object.keys(runningCosts) as RunningCostId[]).filter((id) => wanted.has(id)).map((id) => ({ id, ...runningCosts[id] }));
+  const running = runningFor(type, picked.map(({ option }) => option));
 
   const summary = stepsFor(type.id)
     .filter((step) => step.id !== TYPE_STEP.id)
     .flatMap((step) => step.groups)
     .map((group) => {
       const labels = picked.filter((pick) => pick.group.id === group.id).map((pick) => pick.option.label);
-      return { label: group.legend, value: labels.length > 0 ? labels.join(", ") : "None" };
+      return { label: group.legend, value: labels.length > 0 ? labels.join(", ") : "None", picks: labels.length };
     });
 
   return { type, lines, subtotal, priority, total, upfront, completion, running, summary };
@@ -198,37 +207,6 @@ export function formatGBP(amount: number): string {
   return POUNDS.format(amount);
 }
 
-const WHOLE_POUNDS = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 });
-
-/** "£1,250": for hints beside a choice, where pence would be noise. */
-export function formatPounds(amount: number): string {
-  return WHOLE_POUNDS.format(amount);
-}
-
-/**
- * What a choice does to the estimate, in a few characters, or nothing if it
- * leaves the figure alone. A choice of size shows what the core work comes to
- * at that size, which needs the kind of project it belongs to.
- */
-export function priceHint(option: Option, type?: ProjectType | null): string | null {
-  if (option.factor !== undefined && type) return `Core build ${formatPounds(coreAt(type, option.factor))}`;
-  if (option.charge) return `+ ${formatPounds(option.charge.price)}`;
-  if (option.percent) return `+ ${option.percent}%`;
-  return null;
-}
-
-/**
- * A reference for an estimate, in the pattern of the owner's invoices:
- * "OP-EST-2611-0473" for one made in November 2026. `seed` supplies the last
- * four digits (any number; only its last four digits are used).
- */
-export function quoteNumber(date: Date, seed: number): string {
-  const year = String(date.getFullYear()).slice(-2);
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const serial = String(Math.abs(Math.trunc(seed)) % 10000).padStart(4, "0");
-  return `OP-EST-${year}${month}-${serial}`;
-}
-
 /** "19 November 2026". */
 export function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" }).format(date);
@@ -237,60 +215,4 @@ export function formatDate(date: Date): string {
 /** "19 Dec 2026": for places too narrow for the month in full. */
 export function formatShortDate(date: Date): string {
   return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" }).format(date);
-}
-
-/**
- * The estimate as plain text, short enough to send in a message: the answers,
- * one line per charge, then the totals. `isBrief` leaves the charges out, for
- * places with less room; the answers and the totals still say what was asked for.
- */
-export function quoteAsText(quote: Quote, reference: string, isBrief = false): string {
-  const lines = quote.lines.map((line, i) => `${String(i + 1).padStart(2, "0")} ${line.title}: ${formatGBP(line.price)}`);
-  const answers = quote.summary.map((row) => `${row.label}: ${row.value}`);
-  return [
-    `Estimate ${reference} · ${quote.type.label}`,
-    "",
-    ...answers,
-    "",
-    ...(isBrief ? [] : [...lines, ""]),
-    `Subtotal: ${formatGBP(quote.subtotal)}`,
-    ...(quote.priority ? [`${quote.priority.label} (+${quote.priority.percent}%): ${formatGBP(quote.priority.amount)}`] : []),
-    `Estimated total: ${formatGBP(quote.total)}`,
-    ...(quote.running.length > 0 ? ["", `Not included, paid by the client direct: ${quote.running.map((cost) => cost.title).join(", ")}`] : []),
-  ].join("\n");
-}
-
-/** Who an estimate is for, as typed by the visitor. Either may be empty. */
-export interface QuoteClient {
-  name: string;
-  business: string;
-}
-
-export interface QuoteMessageOptions {
-  /** The longest message the receiving end accepts, in characters. */
-  max: number;
-  client?: QuoteClient;
-  /** Anything the visitor added in their own words. */
-  note?: string;
-  /** Leave the individual charges out from the start, e.g. for an email link, which has far less room. */
-  isBrief?: boolean;
-}
-
-/**
- * The message that carries an estimate to the owner: who it is from, their
- * note, then the estimate. It always fits `max`, and what gives way is chosen
- * on purpose: first the individual charges (the answers and totals stay),
- * then the end of the note. The totals are never cut.
- */
-export function quoteMessage(quote: Quote, reference: string, { max, client, note = "", isBrief = false }: QuoteMessageOptions): string {
-  const from = [client?.name.trim(), client?.business.trim()].filter(Boolean).join(", ");
-  const fromLine = from ? `From ${from}` : "";
-  const reserved = fromLine ? fromLine.length + 2 : 0;
-  const full = quoteAsText(quote, reference, isBrief);
-  const body = full.length + reserved <= max ? full : quoteAsText(quote, reference, true);
-
-  const room = max - body.length - reserved - 2;
-  const trimmed = note.trim();
-  const shownNote = trimmed.length <= room ? trimmed : room > 1 ? `${trimmed.slice(0, room - 1)}…` : "";
-  return [fromLine, shownNote, body].filter(Boolean).join("\n\n");
 }
